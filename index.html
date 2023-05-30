@@ -1,25 +1,33 @@
 <!DOCTYPE html>
 <html lang="pt-br">
-<head>
-    <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <title>Document</title>
-    <link rel="stylesheet" href="style.css">
-</head>
-<body>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
     <header>
-        <h1>Minha Lista de Tarefas</h1>
-        <p id="funcionamento">Clique duas vezes em um item para marcá-lo como completo</p>
-        <input id="texto-tarefa" type="text">
-        <button id="criar-tarefa">Adicionar</button>
-        <ol id="lista-tarefas" class="classOl"></ol>
+      <h1>Minha Lista de Tarefas</h1>
     </header>
-    <div>
-        <button id="apaga-tudo">Apagar Lista</button>
-        <button id="remover-finalizados">Remover Finalizados</button>
-        <button id="salvar-tarefas">Salvar Tarefas</button>
-        <button id="remover-selecionado">Remover Selecionado</button>
-    </div>
+
+    <main>
+      <p id="funcionamento">
+        Clique duas vezes em um item para marcá-lo como completo
+      </p>
+      <!-- <form action=""> -->
+      <input id="texto-tarefa" type="text" />
+      <button id="criar-tarefa">Adicionar</button>
+      <!-- </form> -->
+      <ol id="lista-tarefas" class="classOl"></ol>
+    </main>
+
+    <section>
+      <button id="apaga-tudo">Apagar Lista</button>
+      <button id="remover-finalizados">Remover Finalizados</button>
+      <button id="salvar-tarefas">Salvar Tarefas</button>
+      <button id="remover-selecionado">Remover Selecionado</button>
+    </section>
     <script src="script.js"></script>
-</body>
+  </body>
 </html>
