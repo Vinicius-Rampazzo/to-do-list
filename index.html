@@ -16,7 +16,12 @@
         Clique duas vezes em um item para marcá-lo como completo
       </p>
       <!-- <form action=""> -->
-      <input id="texto-tarefa" type="text" />
+      <input
+        id="texto-tarefa"
+        type="text"
+        placeholder="Digite aqui"
+        onkeydown="search(this)"
+      />
       <button id="criar-tarefa">Adicionar</button>
       <!-- </form> -->
       <ol id="lista-tarefas" class="classOl"></ol>
