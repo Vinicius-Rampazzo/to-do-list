@@ -1,17 +1,46 @@
+body {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
 #texto-tarefa {
   display: inline-block;
 }
 
-#criar-tarefa{
-	display: inline-block;
+.list {
+  list-style: none;
+  text-align: center;
+}
+
+#criar-tarefa {
+  display: inline-block;
 }
 
 .selected {
-  background-color: rgb(128,128,128);
+  background-color: rgb(128, 128, 128);
 }
 
 .completed {
-  text-decoration:line-through solid rgb(0, 0, 0);
+  text-decoration: line-through solid rgb(0, 0, 0);
   background-color: rgb(71, 71, 71);
   color: white;
+}
+
+header h1 {
+  text-align: center;
+}
+
+.class-main {
+  width: 60%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  border: solid 1px black;
+  border-radius: 20px;
+}
+
+#criar-tarefa {
+  width: 20%;
+  height: 40px;
 }

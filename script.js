@@ -10,12 +10,12 @@ const classeDoFilhoDaLista = document.querySelector('.list');
 // coloquei o .value, pois ele me da o valor do input, e assim consigo manipular o que fica dentro dele.
 
 window.onload = () => {
-    lista.innerHTML = localStorage.getItem('lista');
+  lista.innerHTML = localStorage.getItem('lista');
 
-    for (var i = 0; i < lista.children.length; i++) {
-      lista.children[i].addEventListener('click', mudandoBackground);
-      lista.children[i].addEventListener('dblclick', selecionandoComDoisClicks);
-    }
+  for (var i = 0; i < lista.children.length; i++) {
+    lista.children[i].addEventListener('click', mudandoBackground);
+    lista.children[i].addEventListener('dblclick', selecionandoComDoisClicks);
+  }
 
   function mudandoBackground(evento) {
     evento.target.classList.toggle('selected');
@@ -89,7 +89,7 @@ window.onload = () => {
     'click',
     interacaoBotaoRemoverSelecionados
   );
-  // aqui eu busquei meu botao com o queryselector la em cima nas constantes, e depois busquei a classe que fiz "selected", para que se tiver a classe selected, eu remover clacando no botao com o addEventListener. 
+  // aqui eu busquei meu botao com o queryselector la em cima nas constantes, e depois busquei a classe que fiz "selected", para que se tiver a classe selected, eu remover clacando no botao com o addEventListener.
 
   function interacaoBotaoSalvarTarefas() {
     const listaHTML = lista.innerHTML;
