@@ -7,6 +7,8 @@ const botaoSalvarTarefas = document.querySelector('#salvar-tarefas');
 const botaoRemoveSelecionado = document.querySelector('#remover-selecionado');
 let filhoDaLista = document.createElement('li');
 const classeDoFilhoDaLista = document.querySelector('.list');
+// Voltando a programar!!! :)
+
 // coloquei o .value, pois ele me da o valor do input, e assim consigo manipular o que fica dentro dele.
 
 window.onload = () => {
