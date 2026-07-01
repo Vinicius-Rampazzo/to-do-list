@@ -28,8 +28,7 @@ const emptyState      = document.getElementById('empty-state');
 const countPending = document.getElementById('count-pending');
 const countDone    = document.getElementById('count-done');
 
-const btnRemoverFinalizados  = document.getElementById('btn-remover-finalizados');
-const btnRemoverSelecionados = document.getElementById('btn-remover-selecionado');
+const btnRemoverFinalizados = document.getElementById('btn-remover-finalizados');
 const btnApagarTudo          = document.getElementById('btn-apagar-tudo');
 
 // ============================================================
@@ -133,38 +132,47 @@ function createTaskElement(task, index) {
   if (task.completed) li.classList.add('completed');
 
   li.innerHTML = `
-    <span class="drag-handle" aria-hidden="true" title="Arraste para reordenar">
-      <i data-lucide="grip-vertical"></i>
-    </span>
-    <span class="task-num" aria-hidden="true">${index + 1}</span>
-    <span
-      class="task-checkbox"
-      role="checkbox"
-      aria-checked="${task.completed}"
-      aria-label="Marcar como concluída"
-      tabindex="0"
-    ></span>
-    <span class="task-text">${escapeHtml(task.text)}</span>
-    <button
-      class="btn-delete-item"
-      aria-label="Remover tarefa: ${escapeHtml(task.text)}"
-      data-action="delete"
-      title="Remover tarefa"
-    ><i data-lucide="x"></i></button>
+    <div class="item-main-row">
+      <span class="drag-handle" aria-hidden="true" title="Arraste para reordenar">
+        <i data-lucide="grip-vertical"></i>
+      </span>
+      <span class="task-num" aria-hidden="true">${index + 1}</span>
+      <span
+        class="task-checkbox"
+        role="checkbox"
+        aria-checked="${task.completed}"
+        aria-label="Marcar como concluída"
+        tabindex="0"
+      ></span>
+      <span class="task-text">${escapeHtml(task.text)}</span>
+      <button
+        class="btn-delete-item"
+        aria-label="Remover tarefa: ${escapeHtml(task.text)}"
+        data-action="delete"
+        title="Remover tarefa"
+      ><i data-lucide="x"></i></button>
+    </div>
+    <div class="expanded-content" aria-hidden="true">
+      <p class="expanded-text">${escapeHtml(task.text)}</p>
+      <div class="expanded-actions">
+        <span class="expanded-hint">
+          <i data-lucide="mouse-pointer-2"></i>
+          Selecione o texto acima para copiar
+        </span>
+        <button class="btn-copy-task" data-action="copy" title="Copiar texto da tarefa">
+          <i data-lucide="copy"></i> Copiar
+        </button>
+      </div>
+    </div>
   `;
 
   // ── Eventos do item ──
 
-  // Clique simples → selecionar
-  li.addEventListener('click', (e) => {
-    if (e.target.dataset.action === 'delete') return;
+  // Duplo clique → expandir/recolher card
+  li.addEventListener('dblclick', (e) => {
+    if (e.target.closest('[data-action]')) return;
     if (e.target.classList.contains('task-checkbox')) return;
-    li.classList.toggle('selected');
-  });
-
-  // Duplo clique → concluir/desfazer
-  li.addEventListener('dblclick', () => {
-    toggleComplete(task.id);
+    toggleExpand(li);
   });
 
   // Checkbox → concluir
@@ -184,6 +192,22 @@ function createTaskElement(task, index) {
   li.querySelector('[data-action="delete"]').addEventListener('click', (e) => {
     e.stopPropagation();
     removeTaskWithAnimation(task.id);
+  });
+
+  // Botão de copiar (no card expandido)
+  li.querySelector('[data-action="copy"]').addEventListener('click', (e) => {
+    e.stopPropagation();
+    const btn = e.currentTarget;
+    navigator.clipboard.writeText(task.text).then(() => {
+      btn.innerHTML = '<i data-lucide="check"></i> Copiado!';
+      btn.classList.add('btn-copy-success');
+      if (window.lucide) lucide.createIcons();
+      setTimeout(() => {
+        btn.innerHTML = '<i data-lucide="copy"></i> Copiar';
+        btn.classList.remove('btn-copy-success');
+        if (window.lucide) lucide.createIcons();
+      }, 1800);
+    });
   });
 
   // ── Drag & Drop ──
@@ -305,14 +329,28 @@ function removeCompleted() {
 }
 
 /**
- * Remove todas as tarefas que estão com a classe `selected` no DOM.
+ * Alterna o estado expandido de um item da lista.
+ * Colapsa qualquer outro item expandido antes.
+ * @param {HTMLLIElement} li
  */
-function removeSelected() {
-  const selectedEls = listaTarefas.querySelectorAll('.task-item.selected');
-  const selectedIds = Array.from(selectedEls).map((el) => el.dataset.id);
-  tasks = tasks.filter((t) => !selectedIds.includes(t.id));
-  saveTasks();
-  renderTasks();
+function toggleExpand(li) {
+  const isExpanded = li.classList.contains('expanded');
+
+  // Colapsa todos os itens expandidos e reativa o drag deles
+  listaTarefas.querySelectorAll('.task-item.expanded').forEach((el) => {
+    el.classList.remove('expanded');
+    el.setAttribute('draggable', 'true');
+  });
+
+  // Se não estava expandido, expande
+  if (!isExpanded) {
+    li.classList.add('expanded');
+    // Desativa drag enquanto expandido — permite selecionar texto livremente
+    li.setAttribute('draggable', 'false');
+    // Foca o texto para o usuário poder selecionar via teclado
+    const expandedText = li.querySelector('.expanded-text');
+    if (expandedText) expandedText.focus();
+  }
 }
 
 /**
@@ -396,8 +434,27 @@ inputNovaTarefa.addEventListener('keydown', (e) => {
 });
 
 btnRemoverFinalizados.addEventListener('click', removeCompleted);
-btnRemoverSelecionados.addEventListener('click', removeSelected);
 btnApagarTudo.addEventListener('click', clearAll);
+
+// Colapsa cards expandidos ao pressionar Escape
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') {
+    listaTarefas.querySelectorAll('.task-item.expanded').forEach((el) => {
+      el.classList.remove('expanded');
+      el.setAttribute('draggable', 'true');
+    });
+  }
+});
+
+// Colapsa cards expandidos ao clicar fora de um item
+document.addEventListener('click', (e) => {
+  if (!e.target.closest('.task-item')) {
+    listaTarefas.querySelectorAll('.task-item.expanded').forEach((el) => {
+      el.classList.remove('expanded');
+      el.setAttribute('draggable', 'true');
+    });
+  }
+});
 
 // ============================================================
 // INICIALIZAÇÃO
