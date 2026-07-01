@@ -1,46 +1,734 @@
+/* ==============================================
+   DESIGN SYSTEM — CSS Custom Properties
+   Paleta ImobiBrasil: fundo claro, verde vibrante
+   ============================================== */
+:root {
+  /* Paleta de cores */
+  --clr-bg:            #f4f6f4;
+  --clr-bg-card:       #ffffff;
+  --clr-bg-input:      #f9fafb;
+  --clr-bg-item:       #ffffff;
+  --clr-bg-item-hover: #f0faf4;
+
+  --clr-accent:        #16a34a;
+  --clr-accent-light:  #22c55e;
+  --clr-accent-dark:   #15803d;
+  --clr-accent-subtle: rgba(22, 163, 74, 0.08);
+  --clr-accent-glow:   rgba(22, 163, 74, 0.2);
+
+  --clr-success:       #16a34a;
+  --clr-danger:        #dc2626;
+  --clr-danger-light:  rgba(220, 38, 38, 0.08);
+  --clr-danger-glow:   rgba(220, 38, 38, 0.15);
+
+  --clr-selected:        rgba(22, 163, 74, 0.07);
+  --clr-selected-border: rgba(22, 163, 74, 0.35);
+
+  --clr-text-primary:   #111827;
+  --clr-text-secondary: #4b5563;
+  --clr-text-muted:     #9ca3af;
+
+  --clr-border:       #e5e7eb;
+  --clr-border-focus: rgba(22, 163, 74, 0.5);
+
+  /* Tipografia */
+  --font-main: 'Inter', system-ui, -apple-system, sans-serif;
+  --fs-xs:   0.75rem;
+  --fs-sm:   0.875rem;
+  --fs-base: 1rem;
+  --fs-lg:   1.125rem;
+  --fs-xl:   1.5rem;
+  --fs-2xl:  2rem;
+
+  /* Espaçamentos */
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.25rem;
+  --space-6: 1.5rem;
+  --space-8: 2rem;
+  --space-10: 2.5rem;
+  --space-12: 3rem;
+
+  /* Border radius */
+  --radius-sm:   6px;
+  --radius-md:   12px;
+  --radius-lg:   16px;
+  --radius-full: 9999px;
+
+  /* Shadows — clean e sutis */
+  --shadow-card:   0 1px 3px rgba(0, 0, 0, 0.06), 0 4px 20px rgba(0, 0, 0, 0.05);
+  --shadow-card-hover: 0 2px 8px rgba(0, 0, 0, 0.08), 0 8px 30px rgba(0, 0, 0, 0.07);
+  --shadow-btn:    0 4px 14px rgba(22, 163, 74, 0.3);
+  --shadow-input:  0 0 0 3px rgba(22, 163, 74, 0.12);
+
+  /* Transitions */
+  --transition-fast:   150ms ease;
+  --transition-normal: 220ms ease;
+  --transition-slow:   380ms cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* ==============================================
+   RESET & BASE
+   ============================================== */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
 body {
+  font-family: var(--font-main);
+  background-color: var(--clr-bg);
+  color: var(--clr-text-primary);
+  min-height: 100vh;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: var(--space-8) var(--space-4);
+  line-height: 1.6;
+}
+
+/* ==============================================
+   LAYOUT WRAPPER
+   ============================================== */
+.app-wrapper {
+  width: 100%;
+  max-width: 660px;
   display: flex;
   flex-direction: column;
-  align-items: center;
+  gap: var(--space-4);
 }
 
-#texto-tarefa {
-  display: inline-block;
-}
-
-.list {
-  list-style: none;
-  text-align: center;
-}
-
-#criar-tarefa {
-  display: inline-block;
-}
-
-.selected {
-  background-color: rgb(128, 128, 128);
-}
-
-.completed {
-  text-decoration: line-through solid rgb(0, 0, 0);
-  background-color: rgb(71, 71, 71);
-  color: white;
-}
-
-header h1 {
-  text-align: center;
-}
-
-.class-main {
-  width: 60%;
+/* ==============================================
+   HEADER
+   ============================================== */
+.app-header {
   display: flex;
-  flex-direction: column;
   align-items: center;
-  border: solid 1px black;
-  border-radius: 20px;
+  justify-content: space-between;
+  padding: var(--space-5) var(--space-6);
+  background: var(--clr-bg-card);
+  border: 1px solid var(--clr-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-card);
+  flex-wrap: wrap;
+  gap: var(--space-4);
 }
 
-#criar-tarefa {
-  width: 20%;
+.header-brand {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.brand-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
   height: 40px;
+  background: var(--clr-accent);
+  border-radius: var(--radius-md);
+  color: #ffffff;
+  flex-shrink: 0;
+}
+
+.brand-icon svg {
+  width: 20px;
+  height: 20px;
+  stroke-width: 2;
+}
+
+.brand-title {
+  font-size: var(--fs-lg);
+  font-weight: 700;
+  color: var(--clr-text-primary);
+  letter-spacing: -0.3px;
+  line-height: 1.2;
+}
+
+.brand-sub {
+  display: block;
+  font-size: var(--fs-xs);
+  font-weight: 600;
+  color: var(--clr-accent);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+/* Contadores */
+.task-counters {
+  display: flex;
+  align-items: center;
+  gap: var(--space-5);
+  background: var(--clr-bg);
+  border: 1px solid var(--clr-border);
+  border-radius: var(--radius-md);
+  padding: var(--space-3) var(--space-5);
+}
+
+.counter-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+
+.counter-num {
+  font-size: var(--fs-xl);
+  font-weight: 700;
+  color: var(--clr-accent);
+  line-height: 1;
+  transition: transform var(--transition-slow);
+}
+
+.counter-num.bump {
+  transform: scale(1.25);
+}
+
+.counter-label {
+  font-size: var(--fs-xs);
+  font-weight: 500;
+  color: var(--clr-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.counter-divider {
+  width: 1px;
+  height: 28px;
+  background: var(--clr-border);
+}
+
+/* ==============================================
+   CARD PRINCIPAL
+   ============================================== */
+.app-card {
+  background: var(--clr-bg-card);
+  border: 1px solid var(--clr-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-card);
+  padding: var(--space-6);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+/* ==============================================
+   SEÇÃO DE ADICIONAR TAREFA
+   ============================================== */
+.add-task-section {
+  display: flex;
+  gap: var(--space-3);
+}
+
+.input-wrapper {
+  flex: 1;
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.input-icon {
+  position: absolute;
+  left: var(--space-3);
+  display: flex;
+  align-items: center;
+  color: var(--clr-text-muted);
+  pointer-events: none;
+  transition: color var(--transition-normal);
+}
+
+.input-icon svg {
+  width: 16px;
+  height: 16px;
+  stroke-width: 2.5;
+}
+
+.task-input {
+  width: 100%;
+  padding: var(--space-3) var(--space-4) var(--space-3) 2.4rem;
+  font-family: var(--font-main);
+  font-size: var(--fs-base);
+  font-weight: 400;
+  color: var(--clr-text-primary);
+  background: var(--clr-bg-input);
+  border: 1.5px solid var(--clr-border);
+  border-radius: var(--radius-md);
+  outline: none;
+  transition:
+    border-color var(--transition-normal),
+    box-shadow var(--transition-normal),
+    background var(--transition-normal);
+}
+
+.task-input::placeholder {
+  color: var(--clr-text-muted);
+}
+
+.task-input:focus {
+  border-color: var(--clr-accent);
+  background: #ffffff;
+  box-shadow: var(--shadow-input);
+}
+
+.input-wrapper:focus-within .input-icon {
+  color: var(--clr-accent);
+}
+
+/* Estado de erro no input */
+.task-input.input-error {
+  border-color: var(--clr-danger);
+  box-shadow: 0 0 0 3px var(--clr-danger-glow);
+  animation: shake 300ms ease;
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  20%  { transform: translateX(-6px); }
+  60%  { transform: translateX(6px); }
+  80%  { transform: translateX(-3px); }
+}
+
+/* ==============================================
+   BOTÕES
+   ============================================== */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-3) var(--space-5);
+  font-family: var(--font-main);
+  font-size: var(--fs-sm);
+  font-weight: 600;
+  border: 1.5px solid transparent;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  white-space: nowrap;
+  transition:
+    transform var(--transition-fast),
+    box-shadow var(--transition-normal),
+    background var(--transition-normal),
+    border-color var(--transition-normal);
+  user-select: none;
+}
+
+.btn svg {
+  width: 15px;
+  height: 15px;
+  stroke-width: 2.5;
+  flex-shrink: 0;
+}
+
+.btn:active {
+  transform: scale(0.96);
+}
+
+.btn-primary {
+  background: var(--clr-accent);
+  color: #ffffff;
+  border-color: var(--clr-accent);
+  box-shadow: var(--shadow-btn);
+}
+
+.btn-primary:hover {
+  background: var(--clr-accent-dark);
+  border-color: var(--clr-accent-dark);
+  box-shadow: 0 6px 20px rgba(22, 163, 74, 0.4);
+  transform: translateY(-1px);
+}
+
+.btn-secondary {
+  background: #ffffff;
+  color: var(--clr-text-secondary);
+  border-color: var(--clr-border);
+}
+
+.btn-secondary:hover {
+  background: var(--clr-bg);
+  color: var(--clr-text-primary);
+  border-color: #d1d5db;
+}
+
+.btn-danger {
+  background: var(--clr-danger-light);
+  color: var(--clr-danger);
+  border-color: rgba(220, 38, 38, 0.2);
+}
+
+.btn-danger:hover {
+  background: rgba(220, 38, 38, 0.14);
+  border-color: rgba(220, 38, 38, 0.4);
+  box-shadow: 0 4px 12px var(--clr-danger-glow);
+}
+
+/* ==============================================
+   DICA DE INTERAÇÃO
+   ============================================== */
+.hint-text {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--fs-xs);
+  color: var(--clr-text-muted);
+  padding: var(--space-2) var(--space-3);
+  background: var(--clr-bg);
+  border-radius: var(--radius-sm);
+  user-select: none;
+}
+
+.hint-text svg {
+  width: 13px;
+  height: 13px;
+  stroke-width: 2;
+  flex-shrink: 0;
+  color: var(--clr-accent);
+}
+
+/* ==============================================
+   LISTA DE TAREFAS
+   ============================================== */
+.task-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  min-height: 40px;
+}
+
+/* ==============================================
+   ITEM DE TAREFA
+   ============================================== */
+.task-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  background: var(--clr-bg-item);
+  border: 1.5px solid var(--clr-border);
+  border-radius: var(--radius-md);
+  cursor: grab;
+  transition:
+    background var(--transition-normal),
+    border-color var(--transition-normal),
+    transform var(--transition-normal),
+    box-shadow var(--transition-normal),
+    opacity var(--transition-normal);
+
+  animation: slide-in var(--transition-slow) forwards;
+}
+
+@keyframes slide-in {
+  from {
+    opacity: 0;
+    transform: translateY(-10px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.task-item:hover {
+  background: var(--clr-bg-item-hover);
+  border-color: rgba(22, 163, 74, 0.2);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  transform: translateX(2px);
+}
+
+/* Estado: selecionado (1 clique) */
+.task-item.selected {
+  background: var(--clr-selected);
+  border-color: var(--clr-selected-border);
+}
+
+/* Estado: concluído (duplo clique / checkbox) */
+.task-item.completed {
+  background: #fafafa;
+  border-color: #f0f0f0;
+  opacity: 0.7;
+}
+
+.task-item.completed .task-text {
+  text-decoration: line-through;
+  color: var(--clr-text-muted);
+}
+
+.task-item.completed .task-checkbox {
+  background: var(--clr-success);
+  border-color: var(--clr-success);
+}
+
+.task-item.completed .task-checkbox::after {
+  opacity: 1;
+}
+
+/* Estado: sendo arrastado */
+.task-item.dragging {
+  opacity: 0.35;
+  cursor: grabbing;
+  box-shadow: none;
+}
+
+/* Estado: drag over */
+.task-item.drag-over {
+  border-color: var(--clr-accent);
+  background: var(--clr-accent-subtle);
+  transform: scale(1.01);
+}
+
+/* Animação de saída */
+.task-item.removing {
+  animation: slide-out 240ms ease forwards;
+}
+
+@keyframes slide-out {
+  to {
+    opacity: 0;
+    transform: translateX(16px) scale(0.96);
+    max-height: 0;
+    padding: 0;
+    margin: 0;
+    border-width: 0;
+  }
+}
+
+/* ==============================================
+   ELEMENTOS INTERNOS DO ITEM
+   ============================================== */
+
+/* Handle de drag */
+.drag-handle {
+  display: flex;
+  align-items: center;
+  color: var(--clr-text-muted);
+  cursor: grab;
+  padding: var(--space-1);
+  border-radius: var(--radius-sm);
+  transition: color var(--transition-fast);
+  user-select: none;
+  flex-shrink: 0;
+  opacity: 0;
+}
+
+.drag-handle svg {
+  width: 14px;
+  height: 14px;
+  stroke-width: 2;
+}
+
+.task-item:hover .drag-handle {
+  opacity: 1;
+  color: var(--clr-text-secondary);
+}
+
+/* Checkbox customizado */
+.task-checkbox {
+  width: 18px;
+  height: 18px;
+  border-radius: 5px;
+  border: 2px solid var(--clr-border);
+  flex-shrink: 0;
+  cursor: pointer;
+  position: relative;
+  transition:
+    background var(--transition-normal),
+    border-color var(--transition-normal),
+    transform var(--transition-slow);
+}
+
+.task-checkbox:hover {
+  border-color: var(--clr-accent);
+  transform: scale(1.1);
+}
+
+.task-checkbox::after {
+  content: '✓';
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: 800;
+  color: #fff;
+  opacity: 0;
+  transition: opacity var(--transition-normal);
+}
+
+/* Número da tarefa */
+.task-num {
+  font-size: var(--fs-xs);
+  font-weight: 600;
+  color: var(--clr-text-muted);
+  min-width: 16px;
+  text-align: right;
+  flex-shrink: 0;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Texto da tarefa */
+.task-text {
+  flex: 1;
+  font-size: var(--fs-sm);
+  font-weight: 450;
+  color: var(--clr-text-primary);
+  word-break: break-word;
+  transition: color var(--transition-normal);
+  user-select: none;
+}
+
+/* Botão de delete individual */
+.btn-delete-item {
+  background: transparent;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--clr-text-muted);
+  cursor: pointer;
+  padding: var(--space-1);
+  border-radius: var(--radius-sm);
+  transition:
+    color var(--transition-fast),
+    background var(--transition-fast);
+  opacity: 0;
+  flex-shrink: 0;
+}
+
+.btn-delete-item svg {
+  width: 14px;
+  height: 14px;
+  stroke-width: 2.5;
+}
+
+.task-item:hover .btn-delete-item {
+  opacity: 1;
+}
+
+.btn-delete-item:hover {
+  color: var(--clr-danger);
+  background: var(--clr-danger-light);
+}
+
+/* ==============================================
+   EMPTY STATE
+   ============================================== */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-10) var(--space-6);
+  color: var(--clr-text-muted);
+  text-align: center;
+}
+
+.empty-state[hidden] {
+  display: none;
+}
+
+.empty-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 56px;
+  height: 56px;
+  background: var(--clr-accent-subtle);
+  border-radius: var(--radius-lg);
+  color: var(--clr-accent);
+  animation: float 3s ease-in-out infinite;
+}
+
+.empty-icon svg {
+  width: 26px;
+  height: 26px;
+  stroke-width: 1.5;
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-5px); }
+}
+
+.empty-state p {
+  font-size: var(--fs-base);
+  font-weight: 600;
+  color: var(--clr-text-secondary);
+}
+
+.empty-state span {
+  font-size: var(--fs-sm);
+}
+
+/* ==============================================
+   FOOTER DE AÇÕES
+   ============================================== */
+.app-footer {
+  display: flex;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+/* ==============================================
+   SCROLLBAR CUSTOMIZADA
+   ============================================== */
+.task-list::-webkit-scrollbar { width: 4px; }
+.task-list::-webkit-scrollbar-track { background: transparent; }
+.task-list::-webkit-scrollbar-thumb {
+  background: var(--clr-border);
+  border-radius: var(--radius-full);
+}
+
+/* ==============================================
+   RESPONSIVIDADE
+   ============================================== */
+@media (max-width: 600px) {
+  body {
+    padding: var(--space-4) var(--space-3);
+    align-items: flex-start;
+  }
+
+  .app-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .add-task-section {
+    flex-direction: column;
+  }
+
+  .btn-primary {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .app-footer {
+    justify-content: stretch;
+  }
+
+  .app-footer .btn {
+    flex: 1;
+    justify-content: center;
+    font-size: var(--fs-xs);
+    padding: var(--space-3);
+  }
+}
+
+/* ==============================================
+   ACESSIBILIDADE — FOCUS VISIBLE
+   ============================================== */
+:focus-visible {
+  outline: 2px solid var(--clr-accent);
+  outline-offset: 2px;
+  border-radius: var(--radius-sm);
 }

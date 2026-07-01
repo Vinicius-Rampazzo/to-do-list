@@ -1,33 +1,115 @@
 <!DOCTYPE html>
-<html lang="pt-br">
+<html lang="pt-BR">
   <head>
     <meta charset="UTF-8" />
-    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-    <title>Document</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="ToDo List ImobiBrasil — Organize suas tarefas de forma simples, rápida e elegante." />
+    <title>ToDo List · ImobiBrasil</title>
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+
     <link rel="stylesheet" href="style.css" />
   </head>
   <body>
-    <header>
-      <h1>Agendamento Acesso Remoto</h1>
-    </header>
 
-    <main class="class-main">
-      <p id="funcionamento">
-        Clique duas vezes em um item para marcá-lo como completo
-      </p>
+    <div class="app-wrapper">
 
-      <input id="texto-tarefa" type="text" placeholder="Digite aqui" />
-      <button id="criar-tarefa">Adicionar</button>
-      <!-- </form> -->
-      <ol id="lista-tarefas" class="classOl"></ol>
-    </main>
+      <!-- HEADER -->
+      <header class="app-header">
+        <div class="header-brand">
+          <div class="brand-icon" aria-hidden="true">
+            <i data-lucide="list-todo"></i>
+          </div>
+          <div>
+            <h1 class="brand-title">ToDo List</h1>
+            <span class="brand-sub">ImobiBrasil</span>
+          </div>
+        </div>
 
-    <section>
-      <button id="apaga-tudo">Apagar Lista</button>
-      <button id="remover-finalizados">Remover Finalizados</button>
-      <button id="salvar-tarefas">Salvar Tarefas</button>
-      <button id="remover-selecionado">Remover Selecionado</button>
-    </section>
+        <!-- CONTADORES -->
+        <div class="task-counters" aria-live="polite">
+          <div class="counter-item" id="counter-pending">
+            <span class="counter-num" id="count-pending">0</span>
+            <span class="counter-label">Pendentes</span>
+          </div>
+          <div class="counter-divider" aria-hidden="true"></div>
+          <div class="counter-item" id="counter-done">
+            <span class="counter-num" id="count-done">0</span>
+            <span class="counter-label">Concluídas</span>
+          </div>
+        </div>
+      </header>
+
+      <!-- CARD PRINCIPAL -->
+      <main class="app-card" role="main">
+
+        <!-- BARRA DE ADIÇÃO -->
+        <section class="add-task-section" aria-label="Adicionar nova tarefa">
+          <div class="input-wrapper">
+            <span class="input-icon" aria-hidden="true">
+              <i data-lucide="plus"></i>
+            </span>
+            <input
+              id="input-nova-tarefa"
+              type="text"
+              class="task-input"
+              placeholder="Nova tarefa..."
+              maxlength="120"
+              autocomplete="off"
+              aria-label="Digite o nome da tarefa"
+            />
+          </div>
+          <button id="btn-adicionar" class="btn btn-primary" aria-label="Adicionar tarefa">
+            <i data-lucide="plus-circle"></i>
+            Adicionar
+          </button>
+        </section>
+
+        <!-- DICA -->
+        <p class="hint-text" id="hint-interacao">
+          <i data-lucide="info" aria-hidden="true"></i>
+          Clique para selecionar · Duplo clique para concluir · Arraste para reordenar
+        </p>
+
+        <!-- LISTA DE TAREFAS -->
+        <ol id="lista-tarefas" class="task-list" aria-label="Lista de tarefas" aria-live="polite">
+          <!-- Tarefas renderizadas via JS -->
+        </ol>
+
+        <!-- ESTADO VAZIO -->
+        <div id="empty-state" class="empty-state" hidden>
+          <span class="empty-icon" aria-hidden="true">
+            <i data-lucide="clipboard-list"></i>
+          </span>
+          <p>Nenhuma tarefa ainda.</p>
+          <span>Adicione sua primeira tarefa acima!</span>
+        </div>
+
+      </main>
+
+      <!-- AÇÕES -->
+      <footer class="app-footer" role="contentinfo">
+        <button id="btn-remover-finalizados" class="btn btn-secondary" aria-label="Remover tarefas concluídas">
+          <i data-lucide="trash-2"></i> Remover Concluídas
+        </button>
+        <button id="btn-remover-selecionado" class="btn btn-secondary" aria-label="Remover tarefas selecionadas">
+          <i data-lucide="scissors"></i> Remover Selecionadas
+        </button>
+        <button id="btn-apagar-tudo" class="btn btn-danger" aria-label="Apagar toda a lista">
+          <i data-lucide="trash"></i> Apagar Tudo
+        </button>
+      </footer>
+
+    </div>
+
+    <!-- Lucide Icons CDN -->
+    <script src="https://unpkg.com/lucide@latest"></script>
     <script src="script.js"></script>
   </body>
 </html>
