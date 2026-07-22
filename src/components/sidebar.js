@@ -12,7 +12,7 @@ export function renderSidebar() {
       <a href="/tarefas" class="nav-item"><i data-lucide="check-square"></i> Tarefas</a>
       <a href="/foco" class="nav-item"><i data-lucide="timer"></i> Foco</a>
       <a href="/notas" class="nav-item"><i data-lucide="sticky-note"></i> Notas</a>
-      <a href="/ferramentas/corrigir-pontuacao" class="nav-item"><i data-lucide="wrench"></i> Ferramentas</a>
+      <a href="/ferramentas" class="nav-item"><i data-lucide="wrench"></i> Ferramentas</a>
     </nav>
     <div class="sidebar-footer">
       <a href="/configuracoes" class="nav-item"><i data-lucide="settings"></i> Configurações</a>
