@@ -99,19 +99,12 @@ export default {
       path = window.location.hash.replace('#', '');
     }
 
+    const config = TOOL_SLUGS[path] || { tool: 'text', action: 'punct' };
+
     if (path === '/ferramentas' || path === '/ferramentas/') {
-      this.cards.forEach(c => c.style.borderColor = 'var(--clr-border)');
-      this.toolContainer.innerHTML = `
-        <div class="empty-state">
-          <span class="empty-icon"><i data-lucide="wrench"></i></span>
-          <p>Selecione uma ferramenta acima para começar.</p>
-        </div>
-      `;
-      if (window.lucide) window.lucide.createIcons();
-      return;
+      window.history.replaceState(null, '', '/ferramentas/corrigir-pontuacao');
     }
 
-    const config = TOOL_SLUGS[path] || { tool: 'text', action: 'punct' };
     this.loadTool(config.tool, config.action || 'punct');
   },
 
