@@ -3,7 +3,7 @@ import { storageService } from './storageService.js';
 const SETTINGS_KEY = 'wb-settings';
 
 const defaultSettings = {
-  userName: 'Usuário',
+  userName: 'Vinícius',
   pomodoroDuration: 25,
   breakDuration: 5,
   longBreakDuration: 15,

@@ -184,14 +184,14 @@ export default {
         });
       });
 
-      const focusBtn = li.querySelector('.btn-task-focus');
-      if (focusBtn) {
-        focusBtn.addEventListener('click', () => {
-          timerRepository.setTaskContext(task.id, task.title);
-          window.history.pushState(null, '', '/foco');
-          if (window.router) window.router.handleRoute();
-        });
-      } // Drag & Drop
+      const btnFocar = li.querySelector('.btn-start-timer');
+      btnFocar.addEventListener('click', (e) => {
+        e.stopPropagation();
+        timerEngine.startStopwatch(task.id);
+        window.location.hash = '#/foco';
+      });
+
+      // Drag & Drop
       li.addEventListener('dragstart', this.onDragStart.bind(this));
       li.addEventListener('dragenter', this.onDragEnter.bind(this));
       li.addEventListener('dragover', this.onDragOver.bind(this));

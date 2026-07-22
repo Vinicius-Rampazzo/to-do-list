@@ -12,7 +12,7 @@ export function renderFloatingTimer() {
         <button id="floating-btn-playpause" class="btn-icon" aria-label="Pausar/Retomar">
           <i data-lucide="pause"></i>
         </button>
-        <a href="/foco" class="btn-icon" aria-label="Ir ao foco">
+        <a href="#/foco" class="btn-icon" aria-label="Ir ao foco">
           <i data-lucide="external-link"></i>
         </a>
       </div>
@@ -30,7 +30,7 @@ export function initFloatingTimer() {
 
   timerEngine.addListener((state) => {
     // Mostrar somente se houver timer ativo (rodando ou pausado) e NÃO estivermos na rota de foco
-    const isFocoPage = window.location.pathname.startsWith('/foco') || window.location.hash.startsWith('#/foco');
+    const isFocoPage = window.location.hash.startsWith('#/foco');
     const hasActiveTimer = state.seconds > 0 || state.isRunning || state.startedAt;
     
     if (hasActiveTimer && !isFocoPage) {
