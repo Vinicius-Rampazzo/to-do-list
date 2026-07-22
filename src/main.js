@@ -25,19 +25,22 @@ function bootstrap() {
   document.body.insertAdjacentHTML('beforeend', renderFloatingTimer());
 
   // Registra rotas
-  router.add('#/hoje', hojeModule);
-  router.add('#/tarefas', tarefasModule);
-  router.add('#/foco', focoModule);
-  router.add('#/notas', notasModule);
-  router.add('#/ferramentas', ferramentasModule);
-  router.add('#/configuracoes', configuracoesModule);
+  router.add('/hoje', hojeModule);
+  router.add('/tarefas', tarefasModule);
+  router.add('/foco', focoModule);
+  router.add('/notas', notasModule);
+  router.add('/ferramentas', ferramentasModule);
+  router.add('/configuracoes', configuracoesModule);
+
+  // Expõe router globalmente para navegação programática
+  window.router = router;
 
   // Inicializa router no elemento principal
   router.init('app-content');
   initFloatingTimer();
   
   // Update floating timer se estiver visível
-  window.addEventListener('hashchange', () => {
+  window.addEventListener('popstate', () => {
     timerEngine.notifyListeners();
   });
   

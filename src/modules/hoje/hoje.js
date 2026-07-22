@@ -18,15 +18,9 @@ export default {
     const minutes = Math.floor((focusSeconds % 3600) / 60);
     const focusTimeStr = hours > 0 ? `${hours}h${minutes}min` : `${minutes}min`;
 
-    // Saudação dinâmica
-    const hour = new Date().getHours();
-    let greeting = 'Bom dia';
-    if (hour >= 12 && hour < 18) greeting = 'Boa tarde';
-    if (hour >= 18) greeting = 'Boa noite';
-
     return `
       <div class="module-header">
-        <h2>${greeting}, ${settings.userName}</h2>
+        <h2>Veja seu resumo</h2>
         <p class="text-muted">Aqui está o panorama da sua produtividade.</p>
       </div>
 
@@ -74,7 +68,7 @@ export default {
       </div>
 
       <div class="dashboard-actions">
-        <a href="#/foco" class="btn btn-primary"><i data-lucide="play"></i> Iniciar sessão de foco</a>
+        <a href="/foco" class="btn btn-primary"><i data-lucide="play"></i> Iniciar sessão de foco</a>
       </div>
 
       <!-- Grid de seções -->
@@ -84,7 +78,7 @@ export default {
         <div class="dashboard-section">
           <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-4);">
             <h3>Próximas tarefas</h3>
-            <a href="#/tarefas" style="font-size: var(--fs-sm); color: var(--clr-accent); text-decoration: none; font-weight: 600;">Ver todas →</a>
+            <a href="/tarefas" style="font-size: var(--fs-sm); color: var(--clr-accent); text-decoration: none; font-weight: 600;">Ver todas →</a>
           </div>
           <ul class="task-list" id="hoje-task-list">
             <!-- preenchido via JS -->
@@ -95,7 +89,7 @@ export default {
         <div class="dashboard-section">
           <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-4);">
             <h3>${pinnedNotes.length > 0 ? 'Notas fixadas' : 'Notas recentes'}</h3>
-            <a href="#/notas" style="font-size: var(--fs-sm); color: var(--clr-accent); text-decoration: none; font-weight: 600;">Ver todas →</a>
+            <a href="/notas" style="font-size: var(--fs-sm); color: var(--clr-accent); text-decoration: none; font-weight: 600;">Ver todas →</a>
           </div>
           <ul class="task-list" id="hoje-notes-list">
             <!-- preenchido via JS -->

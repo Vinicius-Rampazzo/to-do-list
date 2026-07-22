@@ -188,7 +188,8 @@ export default {
       btnFocar.addEventListener('click', (e) => {
         e.stopPropagation();
         timerEngine.startStopwatch(task.id);
-        window.location.hash = '#/foco';
+        window.history.pushState(null, '', '/foco');
+        if (window.router) window.router.handleRoute();
       });
 
       // Drag & Drop
