@@ -5,21 +5,59 @@ export const router = {
 
   init(containerId) {
     this.container = document.getElementById(containerId);
-    window.addEventListener('hashchange', () => this.handleRoute());
     
-    // Inicia rota baseada no hash atual ou cai no default
+    // Inicia ouvintes de popstate (botões avançar/voltar do navegador) e hashchange (fallback)
+    window.addEventListener('popstate', () => this.handleRoute());
+    window.addEventListener('hashchange', () => this.handleRoute());
+
+    // Intercepta cliques em links internos com href que começam com / ou #/
+    document.body.addEventListener('click', (e) => {
+      const anchor = e.target.closest('a');
+      if (anchor && anchor.getAttribute('href') && !anchor.getAttribute('target')) {
+        const href = anchor.getAttribute('href');
+        if (href.startsWith('/') || href.startsWith('#/')) {
+          e.preventDefault();
+          const cleanPath = href.replace(/^#/, '');
+          window.history.pushState(null, '', cleanPath);
+          this.handleRoute();
+        }
+      }
+    });
+
     this.handleRoute();
   },
 
   add(path, module) {
-    this.routes[path] = module;
+    // Normaliza rota registrando tanto com barra quanto com hash pra compatibilidade
+    const cleanPath = path.replace(/^#/, '');
+    this.routes[cleanPath] = module;
+    this.routes['#' + cleanPath] = module;
   },
 
   async handleRoute() {
-    const hash = window.location.hash || '#/hoje';
-    const path = hash.split('?')[0];
+    let path = window.location.pathname;
 
-    const module = this.routes[path];
+    // Se houver hash #/ na URL, converte para pathname limpo
+    if (window.location.hash && window.location.hash.startsWith('#/')) {
+      path = window.location.hash.replace('#', '');
+      window.history.replaceState(null, '', path);
+    }
+
+    if (!path || path === '/') {
+      path = '/hoje';
+      window.history.replaceState(null, '', '/hoje');
+    }
+
+    // Busca rota exata ou rota base (ex: /ferramentas/corrigir-pontuacao -> /ferramentas)
+    let module = this.routes[path];
+
+    if (!module) {
+      const baseRoute = Object.keys(this.routes).find(r => !r.startsWith('#') && path.startsWith(r + '/'));
+      if (baseRoute) {
+        module = this.routes[baseRoute];
+      }
+    }
+
     if (module) {
       if (this.currentRoute && this.currentRoute.destroy) {
         this.currentRoute.destroy();
@@ -33,16 +71,21 @@ export const router = {
         module.init();
       }
 
-      // Atualiza active state na navegação
+      // Atualiza active state na navegação lateral e inferior
       document.querySelectorAll('.nav-item').forEach(el => {
-        el.classList.toggle('active', el.getAttribute('href') === path);
+        const href = el.getAttribute('href');
+        if (href) {
+          const cleanHref = href.replace(/^#/, '');
+          el.classList.toggle('active', path === cleanHref || path.startsWith(cleanHref + '/'));
+        }
       });
 
       if (window.lucide) {
         window.lucide.createIcons();
       }
     } else {
-      window.location.hash = '#/hoje'; // redirect
+      window.history.replaceState(null, '', '/hoje');
+      this.handleRoute();
     }
   }
 };

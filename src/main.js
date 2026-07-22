@@ -24,20 +24,20 @@ function bootstrap() {
   document.getElementById('bottom-nav').innerHTML = renderBottomNav();
   document.body.insertAdjacentHTML('beforeend', renderFloatingTimer());
 
-  // Registra rotas
-  router.add('#/hoje', hojeModule);
-  router.add('#/tarefas', tarefasModule);
-  router.add('#/foco', focoModule);
-  router.add('#/notas', notasModule);
-  router.add('#/ferramentas', ferramentasModule);
-  router.add('#/configuracoes', configuracoesModule);
+  // Registra rotas com URLs limpas
+  router.add('/hoje', hojeModule);
+  router.add('/tarefas', tarefasModule);
+  router.add('/foco', focoModule);
+  router.add('/notas', notasModule);
+  router.add('/ferramentas', ferramentasModule);
+  router.add('/configuracoes', configuracoesModule);
 
   // Inicializa router no elemento principal
   router.init('app-content');
   initFloatingTimer();
   
-  // Update floating timer se estiver visível
-  window.addEventListener('hashchange', () => {
+  // Update floating timer
+  window.addEventListener('popstate', () => {
     timerEngine.notifyListeners();
   });
   

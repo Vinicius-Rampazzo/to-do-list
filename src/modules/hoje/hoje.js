@@ -26,7 +26,7 @@ export default {
 
     return `
       <div class="module-header">
-        <h2>${greeting}, ${settings.userName}</h2>
+        <h2>Veja seu resumo</h2>
         <p class="text-muted">Aqui está o panorama da sua produtividade.</p>
       </div>
 
@@ -74,28 +74,29 @@ export default {
       </div>
 
       <div class="dashboard-actions">
-        <a href="#/foco" class="btn btn-primary"><i data-lucide="play"></i> Iniciar sessão de foco</a>
+        <a href="/foco" class="btn btn-primary"><i data-lucide="play"></i> Iniciar sessão de foco</a>
       </div>
 
-      <!-- Grid de seções -->
-      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); gap: var(--space-4);">
-        
-        <!-- Tarefas do dia -->
-        <div class="dashboard-section">
+      <!-- Grid de Conteúdo Principal -->
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: var(--space-6);">
+        <!-- Coluna de Tarefas do Dia -->
+        <div class="app-card">
           <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-4);">
-            <h3>Próximas tarefas</h3>
-            <a href="#/tarefas" style="font-size: var(--fs-sm); color: var(--clr-accent); text-decoration: none; font-weight: 600;">Ver todas →</a>
+            <h3 style="display: flex; align-items: center; gap: 8px;">
+              <i data-lucide="check-square" style="color: var(--clr-accent);"></i> Tarefas Pendentes
+            </h3>
+            <a href="/tarefas" style="font-size: var(--fs-sm); color: var(--clr-accent); text-decoration: none; font-weight: 600;">Ver todas →</a>
           </div>
-          <ul class="task-list" id="hoje-task-list">
-            <!-- preenchido via JS -->
-          </ul>
+          <div id="hoje-tasks-list"></div>
         </div>
 
-        <!-- Notas fixadas / recentes -->
-        <div class="dashboard-section">
+        <!-- Coluna de Notas Fixadas -->
+        <div class="app-card">
           <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-4);">
-            <h3>${pinnedNotes.length > 0 ? 'Notas fixadas' : 'Notas recentes'}</h3>
-            <a href="#/notas" style="font-size: var(--fs-sm); color: var(--clr-accent); text-decoration: none; font-weight: 600;">Ver todas →</a>
+            <h3 style="display: flex; align-items: center; gap: 8px;">
+              <i data-lucide="pin" style="color: #f59e0b;"></i> Notas Fixadas
+            </h3>
+            <a href="/notas" style="font-size: var(--fs-sm); color: var(--clr-accent); text-decoration: none; font-weight: 600;">Ver todas →</a>
           </div>
           <ul class="task-list" id="hoje-notes-list">
             <!-- preenchido via JS -->
