@@ -11,9 +11,15 @@ export default {
       </div>
 
       <div class="tabs-nav">
-        <button class="tab-btn active" data-tab="stopwatch">Cronômetro</button>
-        <button class="tab-btn" data-tab="timer">Temporizador</button>
-        <button class="tab-btn" data-tab="pomodoro">Pomodoro</button>
+        <button class="tab-btn active" data-tab="stopwatch">
+          Cronômetro <span id="badge-tab-stopwatch" class="tab-active-dot" style="display:none;">•</span>
+        </button>
+        <button class="tab-btn" data-tab="timer">
+          Temporizador <span id="badge-tab-timer" class="tab-active-dot" style="display:none;">•</span>
+        </button>
+        <button class="tab-btn" data-tab="pomodoro">
+          Pomodoro <span id="badge-tab-pomodoro" class="tab-active-dot" style="display:none;">•</span>
+        </button>
       </div>
 
       <div class="app-card" style="text-align: center; padding: var(--space-8) var(--space-6);">
@@ -29,26 +35,37 @@ export default {
           </div>
           <div style="display: flex; justify-content: center; align-items: center; gap: var(--space-2);">
             <label class="text-muted" style="font-size: var(--fs-sm);">Personalizado:</label>
-            <input type="number" id="input-timer-mins" class="task-input" value="25" min="1" max="180" style="width: 80px; text-align: center; padding: var(--space-1);" />
+            <input type="number" id="input-timer-mins" class="task-input" min="1" max="180" style="width: 80px; text-align: center; padding: var(--space-1);" />
             <span class="text-muted" style="font-size: var(--fs-sm);">min</span>
           </div>
         </div>
 
         <!-- Controles Pomodoro -->
         <div id="controls-pomodoro" style="display: none; margin-bottom: var(--space-5);">
-          <div style="display: flex; justify-content: center; gap: var(--space-2); margin-bottom: var(--space-3); flex-wrap: wrap;">
-            <button class="btn btn-secondary btn-sm preset-pomo-btn" data-focus="25" data-break="5">Tradicional (25m/5m)</button>
-            <button class="btn btn-secondary btn-sm preset-pomo-btn" data-focus="45" data-break="15">Longo (45m/15m)</button>
-            <button class="btn btn-secondary btn-sm preset-pomo-btn" data-focus="15" data-break="3">Rápido (15m/3m)</button>
+          <!-- Presets de Pomodoro -->
+          <div style="display: flex; justify-content: center; gap: var(--space-2); margin-bottom: var(--space-4); flex-wrap: wrap;">
+            <button class="btn btn-secondary btn-sm preset-pomo-btn" data-focus="25" data-break="5" data-longbreak="15" data-cycles="4">Tradicional (25m/5m)</button>
+            <button class="btn btn-secondary btn-sm preset-pomo-btn" data-focus="45" data-break="15" data-longbreak="30" data-cycles="4">Longo (45m/15m)</button>
+            <button class="btn btn-secondary btn-sm preset-pomo-btn" data-focus="15" data-break="3" data-longbreak="10" data-cycles="3">Rápido (15m/3m)</button>
           </div>
-          <div style="display: flex; justify-content: center; align-items: center; gap: var(--space-4);">
+
+          <!-- Configurações Personalizadas do Pomodoro -->
+          <div style="display: flex; justify-content: center; align-items: center; gap: var(--space-3); flex-wrap: wrap;">
             <div>
-              <label class="text-muted" style="display: block; font-size: var(--fs-xs);">Foco (min)</label>
-              <input type="number" id="input-pomo-focus" class="task-input" value="25" min="1" style="width: 70px; text-align: center; padding: var(--space-1);" />
+              <label class="text-muted" style="display: block; font-size: var(--fs-xs); margin-bottom: 2px;">Foco (min)</label>
+              <input type="number" id="input-pomo-focus" class="task-input" value="25" min="1" max="180" style="width: 75px; text-align: center; padding: var(--space-1);" />
             </div>
             <div>
-              <label class="text-muted" style="display: block; font-size: var(--fs-xs);">Descanso (min)</label>
-              <input type="number" id="input-pomo-break" class="task-input" value="5" min="1" style="width: 70px; text-align: center; padding: var(--space-1);" />
+              <label class="text-muted" style="display: block; font-size: var(--fs-xs); margin-bottom: 2px;">Descanso (min)</label>
+              <input type="number" id="input-pomo-break" class="task-input" value="5" min="1" max="60" style="width: 75px; text-align: center; padding: var(--space-1);" />
+            </div>
+            <div>
+              <label class="text-muted" style="display: block; font-size: var(--fs-xs); margin-bottom: 2px;">Desc. Longo (min)</label>
+              <input type="number" id="input-pomo-long-break" class="task-input" value="15" min="1" max="120" style="width: 75px; text-align: center; padding: var(--space-1);" />
+            </div>
+            <div>
+              <label class="text-muted" style="display: block; font-size: var(--fs-xs); margin-bottom: 2px;">Ciclos p/ D. Longo</label>
+              <input type="number" id="input-pomo-cycles" class="task-input" value="4" min="1" max="12" style="width: 75px; text-align: center; padding: var(--space-1);" />
             </div>
           </div>
         </div>
@@ -78,6 +95,11 @@ export default {
         </div>
       </div>
 
+      <!-- Bloco de Explicação do Modo Selecionado (Posicionado abaixo do card) -->
+      <div id="explanation-box" class="dashboard-section" style="margin-top: var(--space-6);">
+        <!-- Conteúdo renderizado dinamicamente via updateExplanation -->
+      </div>
+
       <div class="dashboard-section" style="margin-top: var(--space-6);">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-4);">
           <h3>Sessões de hoje</h3>
@@ -103,8 +125,16 @@ export default {
     this.inputTimerMins = document.getElementById('input-timer-mins');
     this.inputPomoFocus = document.getElementById('input-pomo-focus');
     this.inputPomoBreak = document.getElementById('input-pomo-break');
+    this.inputPomoLongBreak = document.getElementById('input-pomo-long-break');
+    this.inputPomoCycles = document.getElementById('input-pomo-cycles');
     
-    this.currentTab = timerEngine.state.mode;
+    const urlParams = new URLSearchParams(window.location.search);
+    const tabFromUrl = urlParams.get('tab');
+    if (tabFromUrl && ['stopwatch', 'timer', 'pomodoro'].includes(tabFromUrl)) {
+      this.currentTab = tabFromUrl;
+    } else {
+      this.currentTab = 'stopwatch';
+    }
     
     this.populateTasks();
     this.renderSessions();
@@ -124,65 +154,105 @@ export default {
   },
 
   bindEvents() {
-    // Abas
+    // Abas (troca de modo sem bloquear)
     this.tabBtns.forEach(btn => {
       btn.addEventListener('click', (e) => {
-        if (timerEngine.state.isRunning) {
-          if(!confirm('Um timer está rodando. Deseja parar e trocar de modo?')) return;
-          timerEngine.stop();
-        }
-        this.switchTab(e.target.dataset.tab);
+        const targetTab = e.currentTarget.dataset.tab;
+        this.switchTab(targetTab);
       });
     });
 
     // Presets Temporizador
     document.querySelectorAll('.preset-timer-btn').forEach(btn => {
       btn.addEventListener('click', (e) => {
-        const mins = e.target.dataset.time;
+        const mins = parseInt(e.currentTarget.dataset.time) || 10;
         this.inputTimerMins.value = mins;
+        const timerObj = timerEngine.getTimer('timer');
+        if (timerObj) {
+          timerObj.initialSeconds = mins * 60;
+          timerObj.seconds = mins * 60;
+          timerObj.isCompleted = false;
+          timerEngine.lastTimerMins = mins;
+          timerEngine.saveState();
+        }
         this.updateDisplayPreview();
       });
     });
 
-    this.inputTimerMins.addEventListener('input', () => this.updateDisplayPreview());
+    this.inputTimerMins.addEventListener('input', () => {
+      const val = parseInt(this.inputTimerMins.value);
+      if (!isNaN(val) && val > 0) {
+        const timerObj = timerEngine.getTimer('timer');
+        if (timerObj && !timerObj.isRunning && !timerObj.startedAt) {
+          timerObj.initialSeconds = val * 60;
+          timerObj.seconds = val * 60;
+          timerObj.isCompleted = false;
+          timerEngine.lastTimerMins = val;
+          timerEngine.saveState();
+        }
+      }
+      this.updateDisplayPreview();
+    });
 
     // Presets Pomodoro
     document.querySelectorAll('.preset-pomo-btn').forEach(btn => {
       btn.addEventListener('click', (e) => {
-        this.inputPomoFocus.value = e.target.dataset.focus;
-        this.inputPomoBreak.value = e.target.dataset.break;
+        const ds = e.currentTarget.dataset;
+        this.inputPomoFocus.value = ds.focus;
+        this.inputPomoBreak.value = ds.break;
+        if (ds.longbreak) this.inputPomoLongBreak.value = ds.longbreak;
+        if (ds.cycles) this.inputPomoCycles.value = ds.cycles;
         this.updateDisplayPreview();
       });
     });
 
-    this.inputPomoFocus.addEventListener('input', () => this.updateDisplayPreview());
-    this.inputPomoBreak.addEventListener('input', () => this.updateDisplayPreview());
+    [this.inputPomoFocus, this.inputPomoBreak, this.inputPomoLongBreak, this.inputPomoCycles].forEach(input => {
+      if (input) input.addEventListener('input', () => this.updateDisplayPreview());
+    });
 
-    // Controles principais
+    // Controles principais do timer da aba atual
     this.btnStart.addEventListener('click', () => {
       const taskId = this.taskSelect.value || null;
       if (this.currentTab === 'stopwatch') {
         timerEngine.startStopwatch(taskId);
       } else if (this.currentTab === 'timer') {
-        const mins = parseInt(this.inputTimerMins.value) || 25;
+        const timerObj = timerEngine.getTimer('timer');
+        const savedMins = (timerObj && timerObj.initialSeconds > 0) 
+          ? Math.floor(timerObj.initialSeconds / 60) 
+          : (timerEngine.lastTimerMins || 25);
+        
+        let mins;
+        if (timerObj && timerObj.isCompleted) {
+          // Quando clica em "Reiniciar" num timer que acabou, reinicia o timer com o exato tempo que acabou!
+          mins = savedMins;
+        } else {
+          // Se for "Iniciar", pega do campo de texto (se preenchido) ou do tempo salvo
+          const inputVal = parseInt(this.inputTimerMins.value);
+          mins = (!isNaN(inputVal) && inputVal > 0) ? inputVal : savedMins;
+        }
+
+        this.inputTimerMins.value = mins;
         timerEngine.startTimer(mins, taskId);
       } else if (this.currentTab === 'pomodoro') {
         const focusMins = parseInt(this.inputPomoFocus.value) || 25;
         const breakMins = parseInt(this.inputPomoBreak.value) || 5;
-        timerEngine.startPomodoro(taskId, focusMins, breakMins);
+        const longBreakMins = parseInt(this.inputPomoLongBreak.value) || 15;
+        const cycles = parseInt(this.inputPomoCycles.value) || 4;
+        timerEngine.startPomodoro(taskId, focusMins, breakMins, longBreakMins, cycles);
       }
     });
 
     this.btnPause.addEventListener('click', () => {
-      if (timerEngine.state.isRunning) {
-        timerEngine.pause();
+      const t = timerEngine.getTimer(this.currentTab);
+      if (t && t.isRunning) {
+        timerEngine.pause(this.currentTab);
       } else {
-        timerEngine.start();
+        timerEngine.start(this.currentTab);
       }
     });
 
     this.btnStop.addEventListener('click', () => {
-      timerEngine.stop();
+      timerEngine.stop(this.currentTab);
       this.renderSessions(); 
       this.updateDisplayPreview();
     });
@@ -192,106 +262,194 @@ export default {
     this.currentTab = tab;
     this.tabBtns.forEach(btn => btn.classList.toggle('active', btn.dataset.tab === tab));
     
-    // Mostra controles se não estiver rodando
-    const isRunningOrPaused = timerEngine.state.isRunning || timerEngine.state.seconds > 0 || timerEngine.state.startedAt;
-    
-    this.controlsTimer.style.display = (tab === 'timer' && !isRunningOrPaused) ? 'block' : 'none';
-    this.controlsPomodoro.style.display = (tab === 'pomodoro' && !isRunningOrPaused) ? 'block' : 'none';
-    this.pomodoroInfo.style.display = tab === 'pomodoro' ? 'block' : 'none';
-    
-    this.updateDisplayPreview();
+    this.updateExplanation(tab);
+    const timers = timerEngine.getAllTimers();
+    this.updateUI(timers);
+  },
+
+  updateExplanation(tab) {
+    const el = document.getElementById('explanation-box');
+    if (!el) return;
+
+    if (tab === 'stopwatch') {
+      el.innerHTML = `
+        <div style="display: flex; align-items: center; gap: var(--space-2); font-weight: 700; color: var(--clr-accent); font-size: var(--fs-sm); margin-bottom: var(--space-2);">
+          <i data-lucide="info"></i> Como funciona o Cronômetro?
+        </div>
+        <div style="font-size: var(--fs-xs); color: var(--clr-text-secondary); line-height: 1.6;">
+          <p style="margin-bottom: 4px;">• O <strong>Cronômetro</strong> realiza uma contagem progressiva (crescente) a partir do zero (00:00:00).</p>
+          <p style="margin-bottom: 4px;">• Ideal para registrar o tempo livre gasto em tarefas contínuas sem um tempo limite predefinido.</p>
+          <p>• Você pode vincular uma tarefa opcional para contabilizar o tempo trabalhado diretamente no histórico dela.</p>
+        </div>
+      `;
+    } else if (tab === 'timer') {
+      el.innerHTML = `
+        <div style="display: flex; align-items: center; gap: var(--space-2); font-weight: 700; color: var(--clr-accent); font-size: var(--fs-sm); margin-bottom: var(--space-2);">
+          <i data-lucide="info"></i> Como funciona o Temporizador?
+        </div>
+        <div style="font-size: var(--fs-xs); color: var(--clr-text-secondary); line-height: 1.6;">
+          <p style="margin-bottom: 4px;">• O <strong>Temporizador</strong> realiza uma contagem regressiva a partir da duração definida por você.</p>
+          <p style="margin-bottom: 4px;">• Escolha um tempo rápido (10m, 20m, 30m, 45m, 60m) ou digite uma duração personalizada em minutos.</p>
+          <p>• Quando o tempo esgotar, um sinal sonoro será emitido e a notificação permanecerá fixa no menu flutuante até você fechar.</p>
+        </div>
+      `;
+    } else if (tab === 'pomodoro') {
+      el.innerHTML = `
+        <div style="display: flex; align-items: center; gap: var(--space-2); font-weight: 700; color: var(--clr-accent); font-size: var(--fs-sm); margin-bottom: var(--space-2);">
+          <i data-lucide="info"></i> Como funciona a Técnica Pomodoro?
+        </div>
+        <div style="font-size: var(--fs-xs); color: var(--clr-text-secondary); line-height: 1.6;">
+          <p style="margin-bottom: 4px;">• Trabalhe com <strong>foco total</strong> no tempo configurado para Foco (ex: 25 minutos).</p>
+          <p style="margin-bottom: 4px;">• Ao encerrar a sessão de Foco, um som é emitido e o ciclo avança automaticamente para o <strong>Descanso Curto</strong>.</p>
+          <p>• A cada <strong>X ciclos de foco concluídos</strong> (configurável acima), você terá um <strong>Descanso Longo</strong> para recompor a energia.</p>
+        </div>
+      `;
+    }
+
+    if (window.lucide) window.lucide.createIcons();
   },
 
   updateDisplayPreview() {
-    if (timerEngine.state.isRunning || timerEngine.state.seconds > 0 || timerEngine.state.startedAt) return;
+    const t = timerEngine.getTimer(this.currentTab);
+    if (t && (t.isRunning || t.startedAt || t.isCompleted)) return;
     
     if (this.currentTab === 'stopwatch') {
       this.display.textContent = '00:00:00';
     } else if (this.currentTab === 'timer') {
-      const mins = parseInt(this.inputTimerMins.value) || 0;
+      const timerObj = timerEngine.getTimer('timer');
+      const savedMins = (timerObj && timerObj.initialSeconds > 0) ? Math.floor(timerObj.initialSeconds / 60) : (timerEngine.lastTimerMins || 25);
+      const inputVal = parseInt(this.inputTimerMins.value);
+      const mins = (!isNaN(inputVal) && inputVal > 0) ? inputVal : savedMins;
+      this.inputTimerMins.value = mins;
       this.display.textContent = `${mins.toString().padStart(2, '0')}:00`;
     } else if (this.currentTab === 'pomodoro') {
       const fMins = parseInt(this.inputPomoFocus.value) || 0;
       const bMins = parseInt(this.inputPomoBreak.value) || 0;
+      const cycles = parseInt(this.inputPomoCycles.value) || 4;
       this.display.textContent = `${fMins.toString().padStart(2, '0')}:00`;
       
-      document.getElementById('pomodoro-phase').textContent = 'FOCO — Ciclo 1 de 4';
-      document.getElementById('pomodoro-phase').style.color = 'var(--clr-accent)';
-      document.getElementById('pomodoro-desc').textContent = `${fMins} minutos de foco, depois ${bMins} minutos de descanso.`;
+      const phaseEl = document.getElementById('pomodoro-phase');
+      const descEl = document.getElementById('pomodoro-desc');
+      if (phaseEl) phaseEl.textContent = `FOCO — Ciclo 1 de ${cycles}`;
+      if (phaseEl) phaseEl.style.color = 'var(--clr-accent)';
+      if (descEl) descEl.textContent = `${fMins} minutos de foco, depois ${bMins} minutos de descanso.`;
     }
   },
 
-  updateUI(state) {
-    if (this.currentTab !== state.mode && (state.isRunning || state.seconds > 0 || state.startedAt)) {
-      this.switchTab(state.mode);
-    }
+  updateUI(timersMap) {
+    if (!timersMap) return;
 
-    const isHours = state.mode === 'stopwatch';
-    const hrs = Math.floor(state.seconds / 3600).toString().padStart(2, '0');
-    const mins = Math.floor((state.seconds % 3600) / 60).toString().padStart(2, '0');
-    const secs = (state.seconds % 60).toString().padStart(2, '0');
+    // 1. Atualiza indicadores de cada aba (bolinha de status rodando)
+    ['stopwatch', 'timer', 'pomodoro'].forEach(mode => {
+      const t = timersMap[mode];
+      const badge = document.getElementById(`badge-tab-${mode}`);
+      if (badge) {
+        const isTabActive = t && (t.isRunning || t.startedAt || t.isCompleted || (t.mode === 'stopwatch' && t.seconds > 0));
+        if (isTabActive) {
+          badge.style.display = 'inline';
+          badge.style.color = (t.isRunning || t.isCompleted) ? 'var(--clr-accent)' : 'var(--clr-text-muted)';
+        } else {
+          badge.style.display = 'none';
+        }
+      }
+    });
+
+    // 2. Atualiza os dados da aba atual
+    const t = timersMap[this.currentTab] || timerEngine.createDefaultTimerState(this.currentTab);
+    const isHours = this.currentTab === 'stopwatch';
+    const hrs = Math.floor(t.seconds / 3600).toString().padStart(2, '0');
+    const mins = Math.floor((t.seconds % 3600) / 60).toString().padStart(2, '0');
+    const secs = (t.seconds % 60).toString().padStart(2, '0');
+
+    // Um timer está ativo/em andamento se estiver rodando, pausado (startedAt != null) ou concluído
+    const isStartedOrRunning = t.isRunning || t.startedAt !== null || t.isCompleted || (t.mode === 'stopwatch' && t.seconds > 0);
     
-    // Só atualiza o display se estiver rodando ou em estado salvo. 
-    // Se estiver 0 e não iniciado, o updateDisplayPreview cuida.
-    if (state.isRunning || state.seconds > 0 || state.startedAt) {
-      this.display.textContent = isHours ? `${hrs}:${mins}:${secs}` : `${mins}:${secs}`;
+    if (isStartedOrRunning) {
+      if (t.isCompleted) {
+        this.display.textContent = 'Concluído!';
+      } else {
+        this.display.textContent = isHours ? `${hrs}:${mins}:${secs}` : `${mins}:${secs}`;
+      }
+    } else {
+      this.updateDisplayPreview();
     }
 
-    // Esconde controles de configuração quando ativo
-    if (state.isRunning || state.seconds > 0 || state.startedAt) {
+    // Atualiza o valor do input de minutos com a duração salva do temporizador
+    if (this.currentTab === 'timer' && t.initialSeconds > 0 && this.inputTimerMins) {
+      if (document.activeElement !== this.inputTimerMins) {
+        this.inputTimerMins.value = Math.floor(t.initialSeconds / 60);
+      }
+    }
+
+    // Esconde/Mostra controles de configuração da aba atual
+    if (isStartedOrRunning) {
       this.controlsTimer.style.display = 'none';
       this.controlsPomodoro.style.display = 'none';
+      this.pomodoroInfo.style.display = (this.currentTab === 'pomodoro') ? 'block' : 'none';
     } else {
-      if (this.currentTab === 'timer') this.controlsTimer.style.display = 'block';
-      if (this.currentTab === 'pomodoro') this.controlsPomodoro.style.display = 'block';
+      this.controlsTimer.style.display = (this.currentTab === 'timer') ? 'block' : 'none';
+      this.controlsPomodoro.style.display = (this.currentTab === 'pomodoro') ? 'block' : 'none';
+      this.pomodoroInfo.style.display = (this.currentTab === 'pomodoro') ? 'block' : 'none';
     }
 
     // Botões
-    if (state.isRunning) {
+    if (t.isRunning) {
       this.btnStart.style.display = 'none';
       this.btnPause.style.display = 'inline-flex';
       this.btnStop.style.display = 'inline-flex';
       this.btnPause.innerHTML = '<i data-lucide="pause"></i> Pausar';
       this.taskSelect.disabled = true;
-      if (state.taskId) this.taskSelect.value = state.taskId;
-      this.tabBtns.forEach(b => b.disabled = true);
-    } else if (state.seconds > 0 || state.startedAt) {
+      if (t.taskId) this.taskSelect.value = t.taskId;
+    } else if (t.startedAt !== null && !t.isCompleted) {
+      // Pausado (começou mas está pausado)
       this.btnStart.style.display = 'none';
       this.btnPause.style.display = 'inline-flex';
       this.btnStop.style.display = 'inline-flex';
       this.btnPause.innerHTML = '<i data-lucide="play"></i> Retomar';
-      this.tabBtns.forEach(b => b.disabled = false);
-    } else {
+      this.taskSelect.disabled = true;
+      if (t.taskId) this.taskSelect.value = t.taskId;
+    } else if (t.isCompleted) {
+      // Concluído
       this.btnStart.style.display = 'inline-flex';
+      this.btnStart.innerHTML = '<i data-lucide="rotate-ccw"></i> Reiniciar';
+      this.btnPause.style.display = 'none';
+      this.btnStop.style.display = 'inline-flex';
+      this.taskSelect.disabled = false;
+    } else {
+      // Nunca iniciado
+      this.btnStart.style.display = 'inline-flex';
+      this.btnStart.innerHTML = '<i data-lucide="play"></i> Iniciar';
       this.btnPause.style.display = 'none';
       this.btnStop.style.display = 'none';
       this.taskSelect.disabled = false;
-      if (!state.taskId) this.taskSelect.value = '';
-      this.tabBtns.forEach(b => b.disabled = false);
+      if (!t.taskId) this.taskSelect.value = '';
     }
 
     // Pomodoro Info Atualizada
-    if (state.mode === 'pomodoro') {
-      const cycleNum = (state.completedCycles % timerEngine.longBreakInterval) + 1;
+    if (this.currentTab === 'pomodoro' && t.mode === 'pomodoro') {
+      const interval = t.longBreakInterval || parseInt(this.inputPomoCycles?.value) || 4;
+      const cycleNum = (t.completedCycles % interval) + 1;
       const phaseEl = document.getElementById('pomodoro-phase');
       const descEl = document.getElementById('pomodoro-desc');
-      
-      let fMins = Math.floor(state.pomodoroDuration / 60);
-      let bMins = Math.floor(state.breakDuration / 60);
-      let lbMins = Math.floor(state.longBreakDuration / 60);
 
-      if (state.phase === 'focus') {
-        phaseEl.textContent = `🟢 FOCO — Ciclo ${cycleNum} de 4`;
-        phaseEl.style.color = 'var(--clr-accent)';
-        descEl.textContent = `Focando agora. O descanso será de ${bMins} minutos.`;
-      } else if (state.phase === 'break') {
-        phaseEl.textContent = `☕ DESCANSO — Ciclo ${cycleNum} de 4`;
-        phaseEl.style.color = '#f59e0b'; // amber
-        descEl.textContent = `Descansando antes do próximo foco de ${fMins} minutos.`;
-      } else {
-        phaseEl.textContent = `🎉 DESCANSO LONGO`;
-        phaseEl.style.color = '#3b82f6'; // blue
-        descEl.textContent = `Você completou 4 ciclos! Descansando por ${lbMins} minutos.`;
+      if (phaseEl && descEl) {
+        let fMins = Math.floor(t.pomodoroDuration / 60);
+        let bMins = Math.floor(t.breakDuration / 60);
+        let lbMins = Math.floor(t.longBreakDuration / 60);
+
+        if (t.phase === 'focus') {
+          phaseEl.textContent = `🟢 FOCO — Ciclo ${cycleNum} de ${interval}`;
+          phaseEl.style.color = 'var(--clr-accent)';
+          descEl.textContent = `Focando agora. O descanso será de ${bMins} minutos.`;
+        } else if (t.phase === 'break') {
+          phaseEl.textContent = `☕ DESCANSO CURTO — Ciclo ${cycleNum} de ${interval}`;
+          phaseEl.style.color = '#f59e0b';
+          descEl.textContent = `Descansando por ${bMins} min antes da próxima sessão de foco de ${fMins} min.`;
+        } else {
+          phaseEl.textContent = `🎉 DESCANSO LONGO`;
+          phaseEl.style.color = '#3b82f6';
+          descEl.textContent = `Você completou ${interval} ciclos! Descansando por ${lbMins} minutos.`;
+        }
       }
     }
     
@@ -302,6 +460,8 @@ export default {
     const list = document.getElementById('sessions-list');
     const sessions = timerRepository.getTodaySessions();
     
+    if (!list) return;
+
     if (sessions.length === 0) {
       list.innerHTML = '<p class="text-muted">Nenhuma sessão registrada hoje.</p>';
       return;
@@ -328,12 +488,15 @@ export default {
   },
 
   bindSessionsEvents() {
-    document.getElementById('btn-clear-sessions').addEventListener('click', () => {
-      if (confirm('Deseja excluir todas as sessões de hoje?')) {
-        timerRepository.clearTodaySessions();
-        this.renderSessions();
-      }
-    });
+    const clearBtn = document.getElementById('btn-clear-sessions');
+    if (clearBtn) {
+      clearBtn.addEventListener('click', () => {
+        if (confirm('Deseja excluir todas as sessões de hoje?')) {
+          timerRepository.clearTodaySessions();
+          this.renderSessions();
+        }
+      });
+    }
   },
 
   destroy() {

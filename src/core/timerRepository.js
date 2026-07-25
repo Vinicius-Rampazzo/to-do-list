@@ -42,17 +42,30 @@ export const timerRepository = {
     return newSession;
   },
 
-  // Estado do timer ativo (para persistir entre reloads da página)
-  getActiveTimer() {
-    return storageService.get(ACTIVE_TIMER_KEY, null);
+  // Estado dos timers ativos (para persistir entre reloads da página)
+  getActiveTimers() {
+    const saved = storageService.get('wb-active-timers', null);
+    if (saved) return saved;
+
+    // Migração de versão legada (timer único)
+    const oldSaved = storageService.get(ACTIVE_TIMER_KEY, null);
+    if (oldSaved && oldSaved.mode) {
+      const timers = { stopwatch: null, timer: null, pomodoro: null };
+      timers[oldSaved.mode] = oldSaved;
+      storageService.remove(ACTIVE_TIMER_KEY);
+      storageService.set('wb-active-timers', timers);
+      return timers;
+    }
+
+    return { stopwatch: null, timer: null, pomodoro: null };
   },
 
-  setActiveTimer(timerState) {
-    storageService.set(ACTIVE_TIMER_KEY, timerState);
+  setActiveTimers(timersState) {
+    storageService.set('wb-active-timers', timersState);
   },
 
-  clearActiveTimer() {
-    storageService.remove(ACTIVE_TIMER_KEY);
+  clearActiveTimers() {
+    storageService.remove('wb-active-timers');
   },
 
   clearTodaySessions() {

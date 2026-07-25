@@ -22,7 +22,8 @@ export const router = {
       
       // Navegação SPA interna
       e.preventDefault();
-      if (window.location.pathname !== href) {
+      const currentFull = window.location.pathname + window.location.search;
+      if (currentFull !== href) {
         window.history.pushState(null, '', href);
       }
       this.handleRoute();

@@ -2,254 +2,457 @@ import { timerRepository } from './timerRepository.js';
 import { settingsRepository } from './settingsRepository.js';
 import { taskRepository } from './taskRepository.js';
 
+let globalAudioCtx = null;
+
+function getAudioContext() {
+  if (!globalAudioCtx) {
+    const AudioCtxClass = window.AudioContext || window.webkitAudioContext;
+    if (AudioCtxClass) {
+      globalAudioCtx = new AudioCtxClass();
+    }
+  }
+  if (globalAudioCtx && globalAudioCtx.state === 'suspended') {
+    globalAudioCtx.resume().catch(() => {});
+  }
+  return globalAudioCtx;
+}
+
+if (typeof window !== 'undefined') {
+  ['click', 'touchstart', 'keydown', 'mousedown'].forEach(evt => {
+    window.addEventListener(evt, () => {
+      getAudioContext();
+    }, { passive: true });
+  });
+}
+
 class TimerEngine {
   constructor() {
     this.intervalId = null;
     this.listeners = new Set();
+    this.lastTimerMins = 25;
     
     // Configurações padrão do Pomodoro
     const settings = settingsRepository.get();
-    this.pomodoroDuration = settings.pomodoroDuration * 60;
-    this.breakDuration = settings.breakDuration * 60;
-    this.longBreakDuration = settings.longBreakDuration * 60;
-    this.longBreakInterval = settings.longBreakInterval;
+    this.pomodoroDuration = (settings.pomodoroDuration || 25) * 60;
+    this.breakDuration = (settings.breakDuration || 5) * 60;
+    this.longBreakDuration = (settings.longBreakDuration || 15) * 60;
+    this.longBreakInterval = settings.longBreakInterval || 4;
 
+    this.resetAllStates();
     this.restoreState();
+
+    // Quando a aba volta ao foco, recalcula o tempo de todos os timers ativos
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'visible' && this.hasRunningTimers()) {
+        this.tick();
+      }
+    });
   }
 
-  restoreState() {
-    const saved = timerRepository.getActiveTimer();
-    if (saved) {
-      this.state = saved;
-      if (this.state.isRunning) {
-        // Corrige o tempo se a página ficou fechada
-        const now = Date.now();
-        const elapsed = Math.floor((now - this.state.lastTick) / 1000);
-        
-        if (this.state.mode === 'stopwatch') {
-          this.state.seconds += elapsed;
-        } else {
-          this.state.seconds -= elapsed;
-          if (this.state.seconds <= 0) {
-            this.state.seconds = 0;
-            this.state.isRunning = false;
-            this.handleCompletion();
-          }
-        }
-        
-        this.state.lastTick = now;
-        
-        if (this.state.isRunning) {
-          this.startTick();
-        } else {
-          this.saveState();
-        }
+  createDefaultTimerState(mode) {
+    let lastTimerSecs = 1500; // default 25m
+    if (mode === 'timer') {
+      if (this.timers && this.timers.timer && this.timers.timer.initialSeconds > 0) {
+        lastTimerSecs = this.timers.timer.initialSeconds;
+      } else if (this.lastTimerMins > 0) {
+        lastTimerSecs = this.lastTimerMins * 60;
       }
-    } else {
-      this.resetState();
+    }
+
+    const base = {
+      mode,
+      seconds: mode === 'timer' ? lastTimerSecs : 0,
+      initialSeconds: mode === 'timer' ? lastTimerSecs : 0,
+      isRunning: false,
+      isCompleted: false,
+      taskId: null,
+      startedAt: null,
+      lastTick: null
+    };
+
+    if (mode === 'pomodoro') {
+      return {
+        ...base,
+        phase: 'focus', // focus | break | longBreak
+        completedCycles: 0,
+        seconds: this.pomodoroDuration,
+        initialSeconds: this.pomodoroDuration,
+        pomodoroDuration: this.pomodoroDuration,
+        breakDuration: this.breakDuration,
+        longBreakDuration: this.longBreakDuration,
+        longBreakInterval: this.longBreakInterval
+      };
+    }
+
+    return base;
+  }
+
+  resetAllStates() {
+    this.timers = {
+      stopwatch: this.createDefaultTimerState('stopwatch'),
+      timer: this.createDefaultTimerState('timer'),
+      pomodoro: this.createDefaultTimerState('pomodoro')
+    };
+  }
+
+  resetTimerState(mode) {
+    if (this.timers[mode]) {
+      const prevInitial = this.timers[mode].initialSeconds;
+      this.timers[mode] = this.createDefaultTimerState(mode);
+      if (mode === 'timer' && prevInitial > 0) {
+        this.timers[mode].initialSeconds = prevInitial;
+        this.timers[mode].seconds = prevInitial;
+      }
     }
   }
 
-  resetState() {
-    this.state = {
-      mode: 'stopwatch', // stopwatch | timer | pomodoro
-      phase: 'focus', // focus | break | longBreak
-      seconds: 0,
-      initialSeconds: 0,
-      isRunning: false,
-      taskId: null,
-      startedAt: null,
-      lastTick: null,
-      completedCycles: 0,
-      pomodoroDuration: this.pomodoroDuration,
-      breakDuration: this.breakDuration,
-      longBreakDuration: this.longBreakDuration
-    };
-    this.saveState();
+  restoreState() {
+    const saved = timerRepository.getActiveTimers();
+    if (saved) {
+      ['stopwatch', 'timer', 'pomodoro'].forEach(mode => {
+        if (saved[mode]) {
+          this.timers[mode] = saved[mode];
+          const t = this.timers[mode];
+
+          if (mode === 'timer' && t.initialSeconds > 0) {
+            this.lastTimerMins = Math.floor(t.initialSeconds / 60);
+          }
+
+          if (t.isRunning && t.lastTick) {
+            const now = Date.now();
+            const elapsed = Math.floor((now - t.lastTick) / 1000);
+
+            if (t.mode === 'stopwatch') {
+              t.seconds += elapsed;
+            } else {
+              t.seconds -= elapsed;
+              if (t.seconds <= 0) {
+                t.seconds = 0;
+                this.handleCompletion(t);
+              }
+            }
+            t.lastTick = now;
+          }
+        }
+      });
+    }
+
+    if (this.hasRunningTimers()) {
+      this.ensureTickRunning();
+    } else {
+      this.saveState();
+    }
+  }
+
+  // Getter de compatibilidade
+  get state() {
+    return this.timers.stopwatch.isRunning ? this.timers.stopwatch :
+           this.timers.pomodoro.isRunning ? this.timers.pomodoro :
+           this.timers.timer.isRunning ? this.timers.timer :
+           this.timers.stopwatch;
+  }
+
+  getTimer(mode) {
+    return this.timers[mode] || null;
+  }
+
+  getAllTimers() {
+    return this.timers;
+  }
+
+  hasRunningTimers() {
+    return Object.values(this.timers).some(t => t.isRunning);
+  }
+
+  getActiveTimersList() {
+    return Object.values(this.timers).filter(t => t.isRunning || t.seconds > 0 || t.startedAt || t.isCompleted);
   }
 
   saveState() {
-    timerRepository.setActiveTimer(this.state);
+    timerRepository.setActiveTimers(this.timers);
     this.notifyListeners();
   }
 
   startStopwatch(taskId = null) {
-    this.resetState();
-    this.state.mode = 'stopwatch';
-    this.state.taskId = taskId;
-    this.start();
-  }
-
-  startTimer(minutes, taskId = null) {
-    this.resetState();
-    this.state.mode = 'timer';
-    this.state.seconds = minutes * 60;
-    this.state.initialSeconds = minutes * 60;
-    this.state.taskId = taskId;
-    this.start();
-  }
-
-  startPomodoro(taskId = null, focusMins = null, breakMins = null) {
-    this.resetState();
-    this.state.mode = 'pomodoro';
-    this.state.phase = 'focus';
-    
-    if (focusMins) this.state.pomodoroDuration = focusMins * 60;
-    if (breakMins) this.state.breakDuration = breakMins * 60;
-    
-    this.state.seconds = this.state.pomodoroDuration;
-    this.state.initialSeconds = this.state.pomodoroDuration;
-    this.state.taskId = taskId;
-    this.start();
-  }
-
-  start() {
-    if (this.state.isRunning) return;
-    
-    if (!this.state.startedAt) {
-      this.state.startedAt = new Date().toISOString();
+    const t = this.timers.stopwatch;
+    if (!t.isRunning && t.seconds === 0) {
+      this.resetTimerState('stopwatch');
     }
-    this.state.isRunning = true;
-    this.state.lastTick = Date.now();
-    this.saveState();
-    this.startTick();
+    this.timers.stopwatch.taskId = taskId;
+    this.timers.stopwatch.isCompleted = false;
+    this.start('stopwatch');
   }
 
-  pause() {
-    if (!this.state.isRunning) return;
+  startTimer(minutes = null, taskId = null) {
+    const t = this.timers.timer;
+    const selectedMins = minutes || (t.initialSeconds > 0 ? Math.floor(t.initialSeconds / 60) : this.lastTimerMins || 25);
+    this.lastTimerMins = selectedMins;
     
-    this.state.isRunning = false;
-    clearInterval(this.intervalId);
-    this.saveState();
+    t.seconds = selectedMins * 60;
+    t.initialSeconds = selectedMins * 60;
+    t.taskId = taskId;
+    t.isCompleted = false;
+    this.start('timer');
   }
 
-  stop() {
-    this.pause();
-    
-    if (this.state.startedAt) {
-      const duration = this.state.mode === 'stopwatch' 
-        ? this.state.seconds 
-        : (this.state.initialSeconds - this.state.seconds);
-        
+  startPomodoro(taskId = null, focusMins = null, breakMins = null, longBreakMins = null, cycleInterval = null) {
+    const t = this.timers.pomodoro;
+    if (focusMins) t.pomodoroDuration = focusMins * 60;
+    if (breakMins) t.breakDuration = breakMins * 60;
+    if (longBreakMins) t.longBreakDuration = longBreakMins * 60;
+    if (cycleInterval) t.longBreakInterval = parseInt(cycleInterval) || 4;
+
+    if (!t.isRunning && (!t.startedAt || t.seconds === 0 || t.isCompleted)) {
+      t.phase = 'focus';
+      t.seconds = t.pomodoroDuration;
+      t.initialSeconds = t.pomodoroDuration;
+    }
+    t.taskId = taskId;
+    t.isCompleted = false;
+    this.start('pomodoro');
+  }
+
+  start(mode) {
+    const t = this.timers[mode];
+    if (!t || t.isRunning) return;
+
+    if (!t.startedAt) {
+      t.startedAt = new Date().toISOString();
+    }
+    t.isRunning = true;
+    t.isCompleted = false;
+    t.lastTick = Date.now();
+    this.saveState();
+    this.ensureTickRunning();
+  }
+
+  pause(mode) {
+    const t = this.timers[mode];
+    if (!t || !t.isRunning) return;
+
+    t.isRunning = false;
+    this.saveState();
+    this.checkTickStatus();
+  }
+
+  stop(mode) {
+    const t = this.timers[mode];
+    if (!t) return;
+
+    t.isRunning = false;
+
+    if (t.startedAt) {
+      const duration = t.mode === 'stopwatch'
+        ? t.seconds
+        : (t.initialSeconds - t.seconds);
+
       if (duration > 0) {
         timerRepository.create({
-          taskId: this.state.taskId,
-          type: this.state.mode,
-          startedAt: this.state.startedAt,
+          taskId: t.taskId,
+          type: t.mode,
+          startedAt: t.startedAt,
           endedAt: new Date().toISOString(),
           durationInSeconds: duration,
-          label: this.state.phase
+          label: t.phase || ''
         });
-        
-        if (this.state.taskId) {
-          taskRepository.addTime(this.state.taskId, duration);
+
+        if (t.taskId) {
+          taskRepository.addTime(t.taskId, duration);
         }
       }
     }
-    
-    this.resetState();
-    timerRepository.clearActiveTimer();
-  }
 
-  startTick() {
-    clearInterval(this.intervalId);
-    this.intervalId = setInterval(() => {
-      this.state.lastTick = Date.now();
-      
-      if (this.state.mode === 'stopwatch') {
-        this.state.seconds++;
-      } else {
-        this.state.seconds--;
-        if (this.state.seconds <= 0) {
-          this.state.seconds = 0;
-          this.pause();
-          this.handleCompletion();
-          return;
-        }
-      }
-      
-      this.saveState();
-    }, 1000);
-  }
-
-  handleCompletion() {
-    this.playNotificationSound();
-    this.showBrowserNotification('Tempo esgotado!', 'Sua sessão foi concluída.');
-    
-    // Salva a sessão atual
-    if (this.state.startedAt) {
-      const duration = this.state.initialSeconds;
-      timerRepository.create({
-        taskId: this.state.taskId,
-        type: this.state.mode,
-        startedAt: this.state.startedAt,
-        endedAt: new Date().toISOString(),
-        durationInSeconds: duration,
-        label: this.state.phase
-      });
-      
-      if (this.state.taskId) {
-        taskRepository.addTime(this.state.taskId, duration);
-      }
-    }
-
-    if (this.state.mode === 'pomodoro') {
-      this.advancePomodoroPhase();
-    } else {
-      this.resetState();
-      timerRepository.clearActiveTimer();
-    }
-  }
-
-  advancePomodoroPhase() {
-    if (this.state.phase === 'focus') {
-      this.state.completedCycles++;
-      if (this.state.completedCycles % this.state.longBreakInterval === 0) {
-        this.state.phase = 'longBreak';
-        this.state.seconds = this.state.longBreakDuration;
-        this.state.initialSeconds = this.state.longBreakDuration;
-      } else {
-        this.state.phase = 'break';
-        this.state.seconds = this.state.breakDuration;
-        this.state.initialSeconds = this.state.breakDuration;
-      }
-    } else {
-      this.state.phase = 'focus';
-      this.state.seconds = this.state.pomodoroDuration;
-      this.state.initialSeconds = this.state.pomodoroDuration;
-    }
-    
-    this.state.startedAt = null; // reseta para nova sessão
+    this.resetTimerState(mode);
     this.saveState();
+    this.checkTickStatus();
+  }
+
+  dismissCompleted(mode) {
+    const t = this.timers[mode];
+    if (!t) return;
+    this.resetTimerState(mode);
+    this.saveState();
+    this.checkTickStatus();
+  }
+
+  ensureTickRunning() {
+    if (!this.intervalId) {
+      this.intervalId = setInterval(() => {
+        this.tick();
+      }, 200);
+    }
+  }
+
+  checkTickStatus() {
+    if (!this.hasRunningTimers() && this.intervalId) {
+      clearInterval(this.intervalId);
+      this.intervalId = null;
+    }
+  }
+
+  tick() {
+    const now = Date.now();
+    let updated = false;
+
+    Object.values(this.timers).forEach(t => {
+      if (!t.isRunning || !t.lastTick) return;
+
+      const elapsed = Math.floor((now - t.lastTick) / 1000);
+      if (elapsed <= 0) return;
+
+      t.lastTick += elapsed * 1000;
+      updated = true;
+
+      if (t.mode === 'stopwatch') {
+        t.seconds += elapsed;
+      } else {
+        t.seconds -= elapsed;
+        if (t.seconds <= 0) {
+          t.seconds = 0;
+          this.handleCompletion(t);
+        }
+      }
+    });
+
+    if (updated) {
+      this.saveState();
+    }
+  }
+
+  handleCompletion(t) {
+    // Toca o alarme sonoro
+    this.playNotificationSound();
+    
+    if (t.mode === 'pomodoro') {
+      const isFocusPhase = t.phase === 'focus';
+
+      // 1. Grava a sessão concluída no histórico
+      if (t.startedAt) {
+        const duration = t.initialSeconds;
+        timerRepository.create({
+          taskId: t.taskId,
+          type: t.mode,
+          startedAt: t.startedAt,
+          endedAt: new Date().toISOString(),
+          durationInSeconds: duration,
+          label: t.phase || ''
+        });
+
+        if (t.taskId) {
+          taskRepository.addTime(t.taskId, duration);
+        }
+      }
+
+      // 2. Avança a fase do Pomodoro
+      this.advancePomodoroPhase(t);
+
+      // 3. Notificação sonora e de navegador
+      const title = isFocusPhase 
+        ? `Foco concluído! ${t.phase === 'longBreak' ? 'Descanso Longo' : 'Descanso'} iniciado.`
+        : 'Descanso encerrado! Nova sessão de Foco iniciada.';
+      const body = isFocusPhase
+        ? `Aproveite ${Math.floor(t.seconds / 60)} min para descansar.`
+        : `Voltando ao trabalho por ${Math.floor(t.seconds / 60)} min.`;
+
+      this.showBrowserNotification(title, body);
+
+      // 4. Manter o Pomodoro rodando continuamente para a nova fase
+      t.isRunning = true;
+      t.isCompleted = false;
+      t.startedAt = new Date().toISOString();
+      t.lastTick = Date.now();
+      this.saveState();
+      this.ensureTickRunning();
+    } else {
+      // Para temporizador simples (timer)
+      if (t.startedAt) {
+        const duration = t.initialSeconds;
+        timerRepository.create({
+          taskId: t.taskId,
+          type: t.mode,
+          startedAt: t.startedAt,
+          endedAt: new Date().toISOString(),
+          durationInSeconds: duration,
+          label: t.phase || ''
+        });
+
+        if (t.taskId) {
+          taskRepository.addTime(t.taskId, duration);
+        }
+      }
+
+      this.showBrowserNotification('Temporizador concluído!', 'Sua sessão foi concluída.');
+      t.isCompleted = true;
+      t.isRunning = false;
+      t.seconds = 0;
+      this.saveState();
+    }
+  }
+
+  advancePomodoroPhase(t) {
+    if (t.phase === 'focus') {
+      t.completedCycles++;
+      const interval = (t.longBreakInterval && t.longBreakInterval >= 1) ? t.longBreakInterval : 4;
+      if (t.completedCycles % interval === 0) {
+        t.phase = 'longBreak';
+        t.seconds = t.longBreakDuration;
+        t.initialSeconds = t.longBreakDuration;
+      } else {
+        t.phase = 'break';
+        t.seconds = t.breakDuration;
+        t.initialSeconds = t.breakDuration;
+      }
+    } else {
+      t.phase = 'focus';
+      t.seconds = t.pomodoroDuration;
+      t.initialSeconds = t.pomodoroDuration;
+    }
   }
 
   playNotificationSound() {
-    // Implementação de som simplificada usando Web Audio API ou um audio nativo curto
     try {
-      const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-      const oscillator = audioCtx.createOscillator();
-      const gainNode = audioCtx.createGain();
-      
-      oscillator.connect(gainNode);
-      gainNode.connect(audioCtx.destination);
-      
-      oscillator.type = 'sine';
-      oscillator.frequency.setValueAtTime(800, audioCtx.currentTime);
-      oscillator.frequency.exponentialRampToValueAtTime(400, audioCtx.currentTime + 0.3);
-      
-      gainNode.gain.setValueAtTime(1, audioCtx.currentTime);
-      gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
-      
-      oscillator.start();
-      oscillator.stop(audioCtx.currentTime + 0.3);
+      const audioCtx = getAudioContext();
+      if (!audioCtx) return;
+
+      if (audioCtx.state === 'suspended') {
+        audioCtx.resume();
+      }
+
+      const now = audioCtx.currentTime;
+
+      const playNote = (freq, startTime, duration) => {
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(freq, startTime);
+
+        gain.gain.setValueAtTime(0.4, startTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, startTime + duration);
+
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+
+        osc.start(startTime);
+        osc.stop(startTime + duration);
+      };
+
+      // Toca uma melodia marcante de 2 rajadas (Dó-Mí-Sol ... Dó-Mí-Sol)
+      playNote(523.25, now, 0.2);       // C5
+      playNote(659.25, now + 0.2, 0.2); // E5
+      playNote(783.99, now + 0.4, 0.35); // G5
+
+      playNote(523.25, now + 0.8, 0.2);   // C5
+      playNote(659.25, now + 1.0, 0.2);   // E5
+      playNote(783.99, now + 1.2, 0.45);  // G5
     } catch (e) {
-      console.log('Audio não suportado ou bloqueado', e);
+      console.log('Áudio não suportado ou bloqueado', e);
     }
   }
 
   showBrowserNotification(title, body) {
     if (!("Notification" in window)) return;
-    
+
     if (Notification.permission === "granted") {
       new Notification(title, { body, icon: '/favicon.svg' });
     } else if (Notification.permission !== "denied") {
@@ -263,7 +466,7 @@ class TimerEngine {
 
   addListener(callback) {
     this.listeners.add(callback);
-    callback(this.state);
+    callback(this.timers);
   }
 
   removeListener(callback) {
@@ -271,7 +474,7 @@ class TimerEngine {
   }
 
   notifyListeners() {
-    this.listeners.forEach(callback => callback(this.state));
+    this.listeners.forEach(callback => callback(this.timers));
   }
 }
 

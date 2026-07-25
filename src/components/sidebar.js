@@ -4,7 +4,7 @@ export function renderSidebar() {
       <div class="brand-icon"><i data-lucide="layout-dashboard"></i></div>
       <div>
         <h1 class="brand-title">WorkBase</h1>
-        <span class="brand-sub">ImobiBrasil</span>
+        <span class="brand-sub">DocWork</span>
       </div>
     </div>
     <nav class="sidebar-nav">
@@ -15,6 +15,10 @@ export function renderSidebar() {
       <a href="/ferramentas" class="nav-item"><i data-lucide="wrench"></i> Ferramentas</a>
     </nav>
     <div class="sidebar-footer">
+      <button id="theme-toggle-btn" class="theme-toggle-btn" aria-label="Alternar tema">
+        <i data-lucide="moon" id="theme-toggle-icon"></i>
+        <span id="theme-toggle-text">Modo Escuro</span>
+      </button>
       <a href="/configuracoes" class="nav-item"><i data-lucide="settings"></i> Configurações</a>
     </div>
   `;

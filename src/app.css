@@ -1,6 +1,6 @@
 /* ==============================================
    DESIGN SYSTEM — CSS Custom Properties
-   Paleta ImobiBrasil: fundo claro, verde vibrante
+   Paleta DocWork: fundo claro, verde vibrante
    ============================================== */
 :root {
   /* Paleta de cores */
@@ -70,6 +70,43 @@
 }
 
 /* ==============================================
+   DARK MODE PROPERTIES
+   ============================================== */
+[data-theme="dark"] {
+  --clr-bg:            #0f1117;
+  --clr-bg-card:       #1a1d27;
+  --clr-bg-input:      #22252f;
+  --clr-bg-item:       #1a1d27;
+  --clr-bg-item-hover: #232736;
+
+  --clr-accent:        #22c55e;
+  --clr-accent-light:  #4ade80;
+  --clr-accent-dark:   #16a34a;
+  --clr-accent-subtle: rgba(34, 197, 94, 0.12);
+  --clr-accent-glow:   rgba(34, 197, 94, 0.25);
+
+  --clr-success:       #22c55e;
+  --clr-danger:        #ef4444;
+  --clr-danger-light:  rgba(239, 68, 68, 0.12);
+  --clr-danger-glow:   rgba(239, 68, 68, 0.2);
+
+  --clr-selected:        rgba(34, 197, 94, 0.12);
+  --clr-selected-border: rgba(34, 197, 94, 0.4);
+
+  --clr-text-primary:   #f3f4f6;
+  --clr-text-secondary: #9ca3af;
+  --clr-text-muted:     #6b7280;
+
+  --clr-border:       #2d3141;
+  --clr-border-focus: rgba(34, 197, 94, 0.6);
+
+  --shadow-card:       0 1px 3px rgba(0, 0, 0, 0.3), 0 4px 20px rgba(0, 0, 0, 0.25);
+  --shadow-card-hover: 0 2px 8px rgba(0, 0, 0, 0.4), 0 8px 30px rgba(0, 0, 0, 0.35);
+  --shadow-btn:        0 4px 14px rgba(34, 197, 94, 0.3);
+  --shadow-input:      0 0 0 3px rgba(34, 197, 94, 0.2);
+}
+
+/* ==============================================
    RESET & BASE
    ============================================== */
 *,
@@ -106,6 +143,13 @@ body {
   justify-content: flex-start;
   height: 100vh;
   overflow: hidden;
+  transition: background-color 300ms ease, color 300ms ease;
+}
+
+#app-content,
+#sidebar,
+#bottom-nav {
+  transition: background-color 300ms ease, border-color 300ms ease;
 }
 
 #app-content {
@@ -446,7 +490,7 @@ body {
 
 .task-input:focus {
   border-color: var(--clr-accent);
-  background: #ffffff;
+  background: var(--clr-bg-card);
   box-shadow: var(--shadow-input);
 }
 
@@ -517,7 +561,7 @@ body {
 }
 
 .btn-secondary {
-  background: #ffffff;
+  background: var(--clr-bg-card);
   color: var(--clr-text-secondary);
   border-color: var(--clr-border);
 }
@@ -525,7 +569,7 @@ body {
 .btn-secondary:hover {
   background: var(--clr-bg);
   color: var(--clr-text-primary);
-  border-color: #d1d5db;
+  border-color: var(--clr-border);
 }
 
 .btn-danger {
@@ -604,6 +648,108 @@ body {
   width: 100%;
 }
 
+.drag-handle {
+  color: var(--clr-text-muted);
+  cursor: grab;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2px;
+  flex-shrink: 0;
+  transition: color var(--transition-fast);
+}
+
+.drag-handle:hover {
+  color: var(--clr-text-primary);
+}
+
+.drag-handle svg {
+  width: 16px;
+  height: 16px;
+}
+
+.task-num {
+  font-size: var(--fs-xs);
+  font-weight: 600;
+  color: var(--clr-text-muted);
+  min-width: 20px;
+  flex-shrink: 0;
+}
+
+.task-checkbox {
+  width: 20px;
+  height: 20px;
+  border: 2px solid var(--clr-border);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  position: relative;
+  flex-shrink: 0;
+  transition: all var(--transition-fast);
+}
+
+.task-checkbox:hover {
+  border-color: var(--clr-accent);
+}
+
+.task-checkbox::after {
+  content: '';
+  position: absolute;
+  top: 2px;
+  left: 6px;
+  width: 5px;
+  height: 10px;
+  border: solid white;
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
+  opacity: 0;
+  transition: opacity var(--transition-fast);
+}
+
+.task-text {
+  flex: 1;
+  min-width: 0;
+  font-size: var(--fs-sm);
+  font-weight: 500;
+  color: var(--clr-text-primary);
+  word-break: break-word;
+  line-height: 1.5;
+}
+
+.btn-delete-item {
+  background: transparent;
+  border: none;
+  color: var(--clr-text-muted);
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  flex-shrink: 0;
+  margin-left: auto;
+}
+
+.btn-delete-item:hover {
+  background: rgba(239, 68, 68, 0.12);
+  color: #ef4444;
+}
+
+.btn-delete-item svg {
+  width: 16px;
+  height: 16px;
+  stroke-width: 2.5;
+}
+
+/* Footer do módulo de Tarefas */
+.app-footer {
+  margin-top: var(--space-6);
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+}
+
 @keyframes slide-in {
   from {
     opacity: 0;
@@ -630,8 +776,8 @@ body {
 
 /* Estado: concluído (duplo clique / checkbox) */
 .task-item.completed {
-  background: #fafafa;
-  border-color: #f0f0f0;
+  background: var(--clr-bg);
+  border-color: var(--clr-border);
   opacity: 0.7;
 }
 
@@ -971,9 +1117,9 @@ body {
 }
 
 /* ==============================================
-   FLOATING TIMER
+   FLOATING TIMER (Multi-Timer)
    ============================================== */
-.floating-timer {
+.floating-timer-container {
   position: fixed;
   bottom: var(--space-8);
   right: var(--space-8);
@@ -981,21 +1127,61 @@ body {
   border: 1px solid var(--clr-border);
   border-radius: var(--radius-lg);
   box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
-  padding: var(--space-3) var(--space-4);
+  padding: var(--space-3);
   display: flex;
-  align-items: center;
-  gap: var(--space-4);
+  flex-direction: column;
+  gap: var(--space-2);
   z-index: 1050;
   animation: slide-up var(--transition-normal);
+  min-width: 280px;
+  max-width: 360px;
+}
+
+.floating-timer-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding: var(--space-2) var(--space-3);
+  background: var(--clr-bg);
+  border: 1px solid var(--clr-border);
+  border-radius: var(--radius-md);
 }
 
 .floating-timer-info {
   display: flex;
   flex-direction: column;
+  gap: 2px;
+  flex: 1;
+  min-width: 0;
+}
+
+.floating-timer-header-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  justify-content: space-between;
+}
+
+.floating-mode-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: var(--fs-xs);
+  font-weight: 600;
+  color: var(--clr-accent);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.floating-mode-tag svg {
+  width: 12px;
+  height: 12px;
+  stroke-width: 2.5;
 }
 
 .floating-time {
-  font-size: var(--fs-lg);
+  font-size: var(--fs-base);
   font-weight: 700;
   color: var(--clr-text-primary);
   font-variant-numeric: tabular-nums;
@@ -1005,7 +1191,7 @@ body {
 .floating-task {
   font-size: var(--fs-xs);
   color: var(--clr-text-muted);
-  max-width: 150px;
+  max-width: 200px;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -1013,21 +1199,29 @@ body {
 
 .floating-timer-actions {
   display: flex;
-  gap: var(--space-2);
+  gap: var(--space-1);
+  flex-shrink: 0;
 }
 
 .btn-icon {
-  background: var(--clr-bg);
+  background: var(--clr-bg-card);
   border: 1px solid var(--clr-border);
   color: var(--clr-text-secondary);
   border-radius: var(--radius-sm);
-  width: 32px;
-  height: 32px;
+  width: 30px;
+  height: 30px;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
   transition: all var(--transition-fast);
+  text-decoration: none;
+}
+
+.btn-icon svg {
+  width: 14px;
+  height: 14px;
+  stroke-width: 2.5;
 }
 
 .btn-icon:hover {
@@ -1039,6 +1233,54 @@ body {
 @keyframes slide-up {
   from { opacity: 0; transform: translateY(20px); }
   to { opacity: 1; transform: translateY(0); }
+}
+
+/* ==============================================
+   THEME TOGGLE BUTTON
+   ============================================== */
+.theme-toggle-btn {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  color: var(--clr-text-secondary);
+  background: none;
+  border: none;
+  font-family: var(--font-main);
+  font-weight: 500;
+  font-size: var(--fs-sm);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  width: 100%;
+  text-align: left;
+}
+
+.theme-toggle-btn:hover {
+  background: var(--clr-bg);
+  color: var(--clr-text-primary);
+}
+
+.theme-toggle-btn svg {
+  width: 20px;
+  height: 20px;
+  stroke-width: 2;
+}
+
+/* ==============================================
+   TAB ACTIVE DOT INDICATOR
+   ============================================== */
+.tab-active-dot {
+  color: var(--clr-accent);
+  font-weight: 900;
+  font-size: var(--fs-base);
+  line-height: 1;
+  animation: pulse-dot 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse-dot {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.3; }
 }
 
 /* ==============================================
@@ -1124,11 +1366,11 @@ body {
     padding-bottom: 80px;
   }
 
-  .floating-timer {
+  .floating-timer-container {
     bottom: 80px;
     right: var(--space-4);
     left: var(--space-4);
-    justify-content: space-between;
+    max-width: none;
   }
   .floating-task { max-width: 200px; }
 
