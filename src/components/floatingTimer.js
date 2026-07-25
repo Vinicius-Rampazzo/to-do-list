@@ -77,10 +77,12 @@ export function initFloatingTimer() {
     if (activeTimers.length === 0 || isFocoPage) {
       container.style.display = 'none';
       container.innerHTML = '';
+      document.body.classList.remove('has-floating-timer');
       return;
     }
 
     container.style.display = 'flex';
+    document.body.classList.add('has-floating-timer');
 
     activeTimers.forEach(t => {
       const hrs = Math.floor(t.seconds / 3600).toString().padStart(2, '0');

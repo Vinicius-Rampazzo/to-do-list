@@ -1,8 +1,6 @@
 import { taskRepository } from '../../core/taskRepository.js';
 import { timerEngine } from '../../core/timerEngine.js';
 
-let dragSourceId = null;
-
 export default {
   render() {
     return `
@@ -40,7 +38,12 @@ export default {
           <button id="btn-adicionar" class="btn btn-primary"><i data-lucide="plus-circle"></i> Adicionar</button>
         </section>
 
-        <p class="hint-text"><i data-lucide="info"></i> Duplo clique para expandir · Arraste para reordenar</p>
+        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: var(--space-2); margin-bottom: var(--space-3);">
+          <p class="hint-text" style="margin: 0;"><i data-lucide="info"></i> Duplo clique para expandir · Arraste para reordenar</p>
+          <button id="btn-remover-finalizados" class="btn btn-secondary" style="padding: var(--space-1) var(--space-3); font-size: var(--fs-xs);">
+            <i data-lucide="trash-2"></i> Remover Concluídas
+          </button>
+        </div>
 
         <ol id="lista-tarefas" class="task-list"></ol>
 
@@ -49,10 +52,6 @@ export default {
           <p>Nenhuma tarefa ainda.</p>
         </div>
       </div>
-      
-      <footer class="app-footer">
-        <button id="btn-remover-finalizados" class="btn btn-secondary"><i data-lucide="trash-2"></i> Remover Concluídas</button>
-      </footer>
     `;
   },
 
@@ -91,7 +90,6 @@ export default {
     if (e.key === 'Escape' && this.listaTarefas) {
       this.listaTarefas.querySelectorAll('.task-item.expanded').forEach(el => {
         el.classList.remove('expanded');
-        el.setAttribute('draggable', 'true');
       });
     }
   },
@@ -100,7 +98,6 @@ export default {
     if (this.listaTarefas && !e.target.closest('.task-item') && !e.target.closest('#btn-remover-finalizados')) {
       this.listaTarefas.querySelectorAll('.task-item.expanded').forEach(el => {
         el.classList.remove('expanded');
-        el.setAttribute('draggable', 'true');
       });
     }
   },
@@ -116,20 +113,19 @@ export default {
   },
 
   renderTasks() {
-    if (!this.listaTarefas) return; // componente já destruído
-    const tasks = taskRepository.getAll().sort((a, b) => a.order - b.order);
+    if (!this.listaTarefas) return;
+    const tasks = taskRepository.getAll().sort((a, b) => (a.order || 0) - (b.order || 0));
     this.listaTarefas.innerHTML = '';
     
     tasks.forEach((task, index) => {
       const li = document.createElement('li');
       li.className = 'task-item';
       li.setAttribute('data-id', task.id);
-      li.setAttribute('draggable', 'true');
       if (task.completed) li.classList.add('completed');
       
       li.innerHTML = `
         <div class="item-main-row">
-          <span class="drag-handle"><i data-lucide="grip-vertical"></i></span>
+          <span class="drag-handle" title="Arraste para reordenar a tarefa"><i data-lucide="grip-vertical"></i></span>
           <span class="task-num">${index + 1}</span>
           <span class="task-checkbox" role="checkbox" aria-checked="${task.completed}"></span>
           <span class="task-text">${this.escapeHtml(task.title)}</span>
@@ -192,15 +188,10 @@ export default {
         if (window.router) window.router.handleRoute();
       });
 
-      // Drag & Drop
-      li.addEventListener('dragstart', this.onDragStart.bind(this));
-      li.addEventListener('dragenter', this.onDragEnter.bind(this));
-      li.addEventListener('dragover', this.onDragOver.bind(this));
-      li.addEventListener('dragleave', this.onDragLeave.bind(this));
-      li.addEventListener('drop', this.onDrop.bind(this));
-      li.addEventListener('dragend', this.onDragEnd.bind(this));
-
       this.listaTarefas.appendChild(li);
+
+      // Arraste Suave de Tarefas por Ponteiro (Mouse Drag)
+      this.initPointerDragForTaskItem(li, task.id);
     });
 
     this.updateCounters(tasks);
@@ -214,62 +205,151 @@ export default {
     if (window.lucide) window.lucide.createIcons();
   },
 
+  initPointerDragForTaskItem(li, taskId) {
+    li.addEventListener('mousedown', (e) => {
+      const handle = e.target.closest('.drag-handle');
+      if (!handle) return;
+
+      e.stopPropagation();
+      e.preventDefault();
+
+      const listContainer = this.listaTarefas;
+      if (!listContainer) return;
+
+      const allItems = Array.from(listContainer.children);
+      const currentIndex = allItems.indexOf(li);
+      if (currentIndex === -1) return;
+
+      const itemPositions = allItems.map((item) => {
+        const rect = item.getBoundingClientRect();
+        return {
+          el: item,
+          height: rect.height,
+          top: rect.top,
+          centerY: rect.top + rect.height / 2
+        };
+      });
+
+      const draggedItemInfo = itemPositions[currentIndex];
+      const startMouseY = e.clientY;
+      const gap = 8;
+      const shiftOffset = draggedItemInfo.height + gap;
+
+      li.classList.add('dragging');
+      document.body.classList.add('is-dragging-item');
+
+      let newTargetIndex = currentIndex;
+
+      const onMouseMove = (moveEvent) => {
+        moveEvent.preventDefault();
+        const deltaY = moveEvent.clientY - startMouseY;
+        li.style.transform = `translate3d(0, ${deltaY}px, 0)`;
+
+        const currentCenterY = draggedItemInfo.centerY + deltaY;
+        let targetIdx = currentIndex;
+
+        if (deltaY > 0) {
+          for (let i = currentIndex + 1; i < itemPositions.length; i++) {
+            const sib = itemPositions[i];
+            if (currentCenterY > sib.top + sib.height * 0.2) {
+              targetIdx = i;
+            } else {
+              break;
+            }
+          }
+        } else if (deltaY < 0) {
+          for (let i = currentIndex - 1; i >= 0; i--) {
+            const sib = itemPositions[i];
+            if (currentCenterY < sib.top + sib.height * 0.8) {
+              targetIdx = i;
+            } else {
+              break;
+            }
+          }
+        }
+
+        newTargetIndex = targetIdx;
+
+        allItems.forEach((item, idx) => {
+          if (item === li) return;
+
+          if (currentIndex < newTargetIndex) {
+            if (idx > currentIndex && idx <= newTargetIndex) {
+              item.style.transform = `translate3d(0, -${shiftOffset}px, 0)`;
+            } else {
+              item.style.transform = '';
+            }
+          } else if (currentIndex > newTargetIndex) {
+            if (idx >= newTargetIndex && idx < currentIndex) {
+              item.style.transform = `translate3d(0, ${shiftOffset}px, 0)`;
+            } else {
+              item.style.transform = '';
+            }
+          } else {
+            item.style.transform = '';
+          }
+        });
+      };
+
+      const onMouseUp = () => {
+        document.removeEventListener('mousemove', onMouseMove);
+        document.removeEventListener('mouseup', onMouseUp);
+
+        li.classList.remove('dragging');
+        document.body.classList.remove('is-dragging-item');
+
+        if (newTargetIndex !== currentIndex) {
+          allItems.forEach(item => {
+            item.style.transition = 'none';
+          });
+
+          const targetItem = allItems[newTargetIndex];
+          if (newTargetIndex > currentIndex) {
+            listContainer.insertBefore(li, targetItem.nextSibling);
+          } else {
+            listContainer.insertBefore(li, targetItem);
+          }
+
+          allItems.forEach(item => {
+            item.style.transform = '';
+          });
+
+          void listContainer.offsetHeight;
+
+          allItems.forEach(item => {
+            item.style.transition = '';
+          });
+
+          const items = Array.from(listContainer.children);
+          items.forEach((item, index) => {
+            const id = item.dataset.id;
+            if (id) {
+              taskRepository.update(id, { order: index });
+            }
+          });
+        } else {
+          allItems.forEach(item => {
+            item.style.transform = '';
+          });
+        }
+      };
+
+      document.addEventListener('mousemove', onMouseMove);
+      document.addEventListener('mouseup', onMouseUp);
+    });
+  },
+
   toggleExpand(li) {
     const isExpanded = li.classList.contains('expanded');
 
     this.listaTarefas.querySelectorAll('.task-item.expanded').forEach(el => {
       el.classList.remove('expanded');
-      el.setAttribute('draggable', 'true');
     });
 
     if (!isExpanded) {
       li.classList.add('expanded');
-      li.setAttribute('draggable', 'false');
       li.querySelector('.expanded-text')?.focus();
     }
-  },
-
-  onDragStart(e) {
-    dragSourceId = e.currentTarget.dataset.id;
-    e.currentTarget.classList.add('dragging');
-    e.dataTransfer.effectAllowed = 'move';
-    e.dataTransfer.setData('text/plain', dragSourceId);
-  },
-
-  onDragEnter(e) {
-    e.preventDefault();
-    const target = e.currentTarget;
-    if (target.dataset.id !== dragSourceId) {
-      target.classList.add('drag-over');
-    }
-  },
-
-  onDragOver(e) {
-    e.preventDefault();
-    e.dataTransfer.dropEffect = 'move';
-  },
-
-  onDragLeave(e) {
-    e.currentTarget.classList.remove('drag-over');
-  },
-
-  onDrop(e) {
-    e.preventDefault();
-    const targetId = e.currentTarget.dataset.id;
-    e.currentTarget.classList.remove('drag-over');
-
-    if (!dragSourceId || dragSourceId === targetId) return;
-
-    taskRepository.reorder(dragSourceId, targetId);
-    this.renderTasks();
-  },
-
-  onDragEnd(e) {
-    e.currentTarget.classList.remove('dragging');
-    this.listaTarefas.querySelectorAll('.drag-over').forEach(el => {
-      el.classList.remove('drag-over');
-    });
-    dragSourceId = null;
   },
 
   updateCounters(tasks) {

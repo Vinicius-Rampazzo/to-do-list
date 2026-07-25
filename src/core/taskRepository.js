@@ -1,4 +1,5 @@
 import { storageService } from './storageService.js';
+import { noteRepository } from './noteRepository.js';
 
 const TASKS_KEY = 'wb-tasks';
 const LEGACY_KEY = 'imobi-todo-tasks';
@@ -110,6 +111,12 @@ export const taskRepository = {
     let tasks = this.getAll();
     tasks = tasks.filter(t => t.id !== id);
     storageService.set(TASKS_KEY, tasks);
+
+    try {
+      noteRepository.deleteByTaskId(id);
+    } catch (e) {
+      // se noteRepository ainda não estiver carregado, descarta silenciosamente
+    }
   },
 
   reorder(movedId, targetId) {

@@ -85,10 +85,10 @@ export default {
           </ul>
         </div>
 
-        <!-- Notas fixadas / recentes -->
+        <!-- Notas recentes / fixadas -->
         <div class="dashboard-section">
           <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-4);">
-            <h3>${pinnedNotes.length > 0 ? 'Notas fixadas' : 'Notas recentes'}</h3>
+            <h3>Notas</h3>
             <a href="/notas" style="font-size: var(--fs-sm); color: var(--clr-accent); text-decoration: none; font-weight: 600;">Ver todas →</a>
           </div>
           <ul class="task-list" id="hoje-notes-list">
@@ -164,10 +164,11 @@ export default {
     if (!list) return;
 
     const allNotes = noteRepository.getAll();
-    const pinnedNotes = allNotes.filter(n => n.pinned);
-    const displayNotes = pinnedNotes.length > 0 
-      ? pinnedNotes.slice(0, 4) 
-      : allNotes.sort((a, b) => new Date(b.updatedAt) - new Date(a.updatedAt)).slice(0, 4);
+    const displayNotes = [...allNotes].sort((a, b) => {
+      if (a.pinned && !b.pinned) return -1;
+      if (!a.pinned && b.pinned) return 1;
+      return (a.order || 0) - (b.order || 0);
+    }).slice(0, 5);
 
     if (displayNotes.length === 0) {
       list.innerHTML = `<p class="text-muted" style="padding: var(--space-3) 0;">Nenhuma nota salva ainda.</p>`;

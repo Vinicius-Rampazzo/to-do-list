@@ -26,13 +26,14 @@ export const noteRepository = {
     return this.getAll().filter(n => n.content.toLowerCase().includes(lowerQuery));
   },
 
-  create(content, pinned = false) {
+  create(content, pinned = false, taskId = null) {
     const notes = this.getAll();
     const maxOrder = notes.length > 0 ? Math.max(...notes.map(n => n.order || 0)) : 0;
     const newNote = {
       id: generateId(),
       content: content,
       pinned: pinned,
+      taskId: taskId || null,
       order: maxOrder + 1,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString()
@@ -59,6 +60,12 @@ export const noteRepository = {
     storageService.set(NOTES_KEY, notes);
   },
 
+  deleteByTaskId(taskId) {
+    let notes = this.getAll();
+    notes = notes.filter(n => n.taskId !== taskId);
+    storageService.set(NOTES_KEY, notes);
+  },
+
   togglePin(id) {
     const note = this.getById(id);
     if (note) {
@@ -70,7 +77,7 @@ export const noteRepository = {
   reorder(sourceId, targetId) {
     const notes = this.getAll();
     
-    // Sort array identically to how it's rendered to ensure order mapping works
+    // Sort array identically to how it's rendered
     notes.sort((a, b) => {
       if (a.pinned !== b.pinned) return b.pinned ? 1 : -1;
       return (a.order || 0) - (b.order || 0);
@@ -80,12 +87,11 @@ export const noteRepository = {
     const targetIndex = notes.findIndex(n => n.id === targetId);
 
     if (sourceIndex === -1 || targetIndex === -1) return;
-    if (notes[sourceIndex].pinned || notes[targetIndex].pinned) return; // Prevent reordering pinned notes
+    if (notes[sourceIndex].pinned || notes[targetIndex].pinned) return;
 
     const [movedNote] = notes.splice(sourceIndex, 1);
     notes.splice(targetIndex, 0, movedNote);
 
-    // Update order property for non-pinned notes
     let currentOrder = 1;
     notes.forEach(note => {
       if (!note.pinned) {
